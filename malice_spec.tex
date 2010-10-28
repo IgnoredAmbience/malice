@@ -15,37 +15,40 @@
 
 \maketitle            % generates the title from the data above
 
-\section{Introduction}
-
 \section{BNF Grammar} 
 \begin{tabular}{lcl}
 Program     & $\to$ & Statements Output \\
 Statements  & $\to$ & Statement Terminator Statements $|$ $\epsilon$ \\
 Terminator  & $\to$ & \verb:,: $|$ \verb:.: $|$ \verb:and: $|$ \verb:but: $|$ \verb:then: \\
 Output      & $\to$ & \verb:Alice found: Exp \verb:.: \\
+\\
 Statement   & $\to$ & \emph{Id} \verb|was a| Type Too \\
             &  $|$  & \emph{Id} \verb|became| Exp \\
             &  $|$  & \emph{Id} \verb|ate| \\
             &  $|$  & \emph{Id} \verb|drank| \\
+\\
 Type        & $\to$ & \verb|number| \\
 Too         & $\to$ & \verb|too| $|$ $\epsilon$ \\
 Exp         & $\to$ & Exp \verb:|: Exp1 \\
             &  $|$  & Exp \verb:^: Exp1 \\
             &  $|$  & Exp \verb:&: Exp1 \\
             &  $|$  & Exp1 \\
+\\
 Exp1        & $\to$ & Exp1 \verb:+: Exp2 \\
             &  $|$  & Exp2 \\
+\\
 Exp2        & $\to$ & Exp2 \verb:*: Exp3 \\
             &  $|$  & Exp2 \verb:/: Exp3 \\
             &  $|$  & Exp2 \verb:%: Exp3 \\
             &  $|$  & Exp3 \\
+\\
 Exp3        & $\to$ & \verb:~:Val $|$ Val \\
 Val         & $\to$ & \emph{Int} $|$ \emph{Id} \\
 \end{tabular}
 
 \begin{itemize}
 \item \emph{Int} is an integer, matching the regular expression pattern \verb:[0-9]+:
-\item \emph{Id} is a variable identifier, matching \verb:[a-zA-Z]+:
+\item \emph{Id} is a variable identifier, matching \verb:[a-zA-Z_]+:
 \end{itemize}
 
 \section{Semantics}
@@ -56,52 +59,88 @@ Numbers are unsigned integers of length 8 bits (ie: they can hold the range
 operators listed in the operators section can be used.
 
 \subsubsection{Letter}
-Although \verb:letter: appears as a type in the given examples, there are none
-in which its functionality is exhibited. Consequently, nothing can be inferred
-about this possible type, including whether it is a valid type or not!
+Although \verb:letter: appears as a type in the given examples, there are no
+working exapmles in which its functionality is exhibited. Consequently, nothing
+can be inferred about this possible type, including whether it is a valid type
+or not!
 
 As such, it is not included in this version of the language specification.
 
 \subsection{Statements}
-\subsection{Operators}
+An Alice program is defined as a list of statements followed by the output
+statement.
 
+\subsubsection{Output}
+The \verb:Alice found: statement is analogous to the return statement of
+other languages. It evaluates its parameter (an expression) and returns the
+value.
 
-\begin{enumerate}
+For example:\\
+\verb:  Alice found 3.:\\
+returns the value 3.
 
-    \item
-    This is item 1.
-    
-    \item
-    And this is item 2.
-    
-\end{enumerate}
+\subsubsection{Declaration}
+The \verb:was a: statement declares the preceding identifier as a variable of
+the given type.
 
-And here is a bulleted list.
+Declaring the same variable name multiple times is not permitted and will
+result in a compile-time error.
+
+For example:\\
+\verb:  x was a number:\\
+declares a variable called $x$ as a number
+
+\subsubsection{Assignment}
+The \verb:became: statement assigns the value of an expression to the given
+variable.
+
+The type of the expression must match the type of the variable, otherwise a
+compile-time error will result.
+
+For example:\\
+\verb:  x became 5:\\
+assigns 5 to $x$.
+
+\subsubsection{Increment and Decrement}
+The \verb:drank: statement decrements the given variable by 1.
+
+The \verb:ate: statement increments the given variable by 1.
+
+For example:\\
+\verb:  x drank:\\
+if $x$ is 5, $x$ will become 4
+
+For example:\\
+\verb:  x ate:\\
+if $x$ is 5, $x$ will become 6
+
+\subsection{Expressions}
+\begin{tabular}{ccc}
+Operator & Operation   & Precedence \\
+\hline
+\hline
+\verb:|: & Bitwise OR  & 1 \\
+\verb:^: & Bitwise XOR & 1 \\
+\verb:&: & Bitwise AND & 1 \\
+\hline
+\verb:+: & Addition    & 2 \\
+\hline
+\verb:*: & Multiplication & 3 \\
+\verb:/: & Division       & 3 \\
+\verb:%: & Modulo         & 3 \\
+\hline
+\verb:~: & Bitwise NOT    & 4 \\
+\end{tabular}
 
 \begin{itemize}
+\item Numerically higher precedences bind more tightly.
 
-    \item
-    The parts of the list are called items here too.
-    
+\item All operators are mathematically associative, and implemented as
+left-associative.
+
+\item Division by 0 is undefined and will be handled by the operating system.
+
+\item All operators are binary, except for Bitwise NOT which is unary.
 \end{itemize}
-
-Finally for this document, if you want to include a reference
-then you put it into a \texttt{thebibliography\{...\}}
-environment (see below in source file) and then 
-cite it like this \cite{lamport94}
-(you will need to run \texttt{latex} twice to get it to process the citation),
-or you can use BibTex but that is probably overkill for now.
-
-\begin{thebibliography}{9}
-
-\bibitem{lamport94}
-  Leslie Lamport,
-  \emph{\LaTeX: A Document Preparation System}.
-  Addison Wesley, Massachusetts,
-  2nd Edition,
-  1994.
-
-\end{thebibliography}
-
 
 \end{document}
