@@ -19,30 +19,30 @@
 \begin{tabular}{lcl}
 Program     & $\to$ & Statements Output \\
 Statements  & $\to$ & Statement Terminator Statements $|$ $\epsilon$ \\
-Terminator  & $\to$ & \verb:,: $|$ \verb:.: $|$ \verb:and: $|$ \verb:but: $|$ \verb:then: \\
-Output      & $\to$ & \verb:Alice found: Exp \verb:.: \\
+Terminator  & $\to$ & `\verb:,:' $|$ `\verb:.:' $|$ `\verb:and:' $|$ `\verb:but:' $|$ `\verb:then:' \\
+Output      & $\to$ & `\verb:Alice found:' Exp `\verb:.:' \\
 \\
-Statement   & $\to$ & \emph{Id} \verb|was a| Type Too \\
-            &  $|$  & \emph{Id} \verb|became| Exp \\
-            &  $|$  & \emph{Id} \verb|ate| \\
-            &  $|$  & \emph{Id} \verb|drank| \\
+Statement   & $\to$ & \emph{Id} `\verb|was a|' Type Too \\
+            &  $|$  & \emph{Id} `\verb|became|' Exp \\
+            &  $|$  & \emph{Id} `\verb|ate|' \\
+            &  $|$  & \emph{Id} `\verb|drank|' \\
 \\
-Type        & $\to$ & \verb|number| \\
-Too         & $\to$ & \verb|too| $|$ $\epsilon$ \\
-Exp         & $\to$ & Exp \verb:|: Exp1 \\
-            &  $|$  & Exp \verb:^: Exp1 \\
-            &  $|$  & Exp \verb:&: Exp1 \\
+Type        & $\to$ & `\verb|number|' \\
+Too         & $\to$ & `\verb|too|' $|$ $\epsilon$ \\
+Exp         & $\to$ & Exp `\verb:|:' Exp1 \\
+            &  $|$  & Exp `\verb:^:' Exp1 \\
+            &  $|$  & Exp `\verb:&:' Exp1 \\
             &  $|$  & Exp1 \\
 \\
-Exp1        & $\to$ & Exp1 \verb:+: Exp2 \\
+Exp1        & $\to$ & Exp1 `\verb:+:' Exp2 \\
             &  $|$  & Exp2 \\
 \\
-Exp2        & $\to$ & Exp2 \verb:*: Exp3 \\
-            &  $|$  & Exp2 \verb:/: Exp3 \\
-            &  $|$  & Exp2 \verb:%: Exp3 \\
+Exp2        & $\to$ & Exp2 `\verb:*:' Exp3 \\
+            &  $|$  & Exp2 `\verb:/:' Exp3 \\
+            &  $|$  & Exp2 `\verb:%:' Exp3 \\
             &  $|$  & Exp3 \\
 \\
-Exp3        & $\to$ & \verb:~:Val $|$ Val \\
+Exp3        & $\to$ & `\verb:~:' Exp3 $|$ Val \\
 Val         & $\to$ & \emph{Int} $|$ \emph{Id} \\
 \end{tabular}
 
@@ -85,6 +85,9 @@ the given type.
 
 Declaring the same variable name multiple times is not permitted and will
 result in a compile-time error.
+
+The keyword \verb:too: may be placed at the end of this statement. No meaning
+could be inferred from the examples given, so none has been assumed at this point.
 
 For example:\\
 \verb:  x was a number:\\
@@ -145,6 +148,8 @@ left-associative.
 \item The only precedences that were determinable from the example files given
 were those for the \verb|+| and \verb|*| operators. All other precedences have
 been taken from the common usage, or where none is obvious, from the C language.
+
+\item Underflow and overflow conditions are undefined.
 \end{itemize}
 
 \end{document}
