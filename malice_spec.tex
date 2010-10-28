@@ -1,5 +1,5 @@
 \documentclass[a4wide, 11pt]{article}
-\usepackage{a4, fullpage}
+\usepackage{a4}
 \setlength{\parskip}{0.3cm}
 \setlength{\parindent}{0cm}
 
@@ -9,7 +9,7 @@
 
 \title{MAlice Language Specification}
 
-\author{Tim Kimber \and Paul Kelly \and Nicolas Loriant}
+\author{Ethel Bardsley \and Joe Slade \and Thomas Wood}
 
 \date{\today}         % inserts today's date
 
@@ -17,39 +17,35 @@
 
 \section{Introduction}
 
-This is an \emph{introductory comment}.
-\LaTeX\ can typeset some very complex documents, but it is also
-\textbf{quite easy to get started}.
-Try playing around with this file and see. 
-Don't worry that this page looks very spaced out,
-\LaTeX\ arranges the page for you (much less work to do than in Word!)
-so if there was more content it would close up the gaps.
-
-To start a new paragraph just leave a blank line.
-If you do not like numbered sections, use the \texttt{section*\{...\}}
-environment instead.
-
 \section{BNF Grammar} 
-
-\begin{verbatim}
-    The verbatim environment outputs the source without changing
-    it in any way. 
-          This
-              includes line breaks
-       and indentation. 
-    It is useful to reproduce code snippets.
-\end{verbatim}
-
-To include maths formulas in text put them between \$ symbols like this
-$f(x) = x \times 5$.
-Or to display a formula on a line on its own you do this:
-\[
-    g(y) = y^2
-\]
+\begin{tabular}{lcl}
+Program     & $\to$ & Statements Output \\
+Statements  & $\to$ & Statement Terminator Statements $|$ $\epsilon$ \\
+Terminator  & $\to$ & \verb:,: $|$ \verb:.: $|$ \verb:and: $|$ \verb:but: $|$ \verb:then: \\
+Output      & $\to$ & \verb:Alice found: Exp \verb:.: \\
+Statement   & $\to$ & Id \verb|was a| Type Too \\
+            &  $|$  & Id \verb|became| Exp \\
+            &  $|$  & Id \verb|ate| \\
+            &  $|$  & Id \verb|drank| \\
+Type        & $\to$ & \verb|number| \\
+Too         & $\to$ & \verb|too| $|$ $\epsilon$ \\
+Exp         & $\to$ & Exp \verb:|: Exp1 \\
+            &  $|$  & Exp \verb:^: Exp1 \\
+            &  $|$  & Exp \verb:&: Exp1 \\
+            &  $|$  & Exp1 \\
+Exp1        & $\to$ & Exp1 \verb:+: Exp2 \\
+            &  $|$  & Exp2 \\
+Exp2        & $\to$ & Exp2 \verb:*: Exp3 \\
+            &  $|$  & Exp2 \verb:/: Exp3 \\
+            &  $|$  & Exp2 \verb:%: Exp3 \\
+            &  $|$  & Exp3 \\
+Exp3        & $\to$ & \verb:~:Val $|$ Val \\
+Val         & $\to$ & \emph{Int} $|$ \emph{Id} \\
+\end{tabular}
 
 \section{Semantics}
+\subsection{Statements}
 
-Here is a numbered list.
 
 \begin{enumerate}
 
