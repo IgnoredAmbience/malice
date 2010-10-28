@@ -23,10 +23,10 @@ Program     & $\to$ & Statements Output \\
 Statements  & $\to$ & Statement Terminator Statements $|$ $\epsilon$ \\
 Terminator  & $\to$ & \verb:,: $|$ \verb:.: $|$ \verb:and: $|$ \verb:but: $|$ \verb:then: \\
 Output      & $\to$ & \verb:Alice found: Exp \verb:.: \\
-Statement   & $\to$ & Id \verb|was a| Type Too \\
-            &  $|$  & Id \verb|became| Exp \\
-            &  $|$  & Id \verb|ate| \\
-            &  $|$  & Id \verb|drank| \\
+Statement   & $\to$ & \emph{Id} \verb|was a| Type Too \\
+            &  $|$  & \emph{Id} \verb|became| Exp \\
+            &  $|$  & \emph{Id} \verb|ate| \\
+            &  $|$  & \emph{Id} \verb|drank| \\
 Type        & $\to$ & \verb|number| \\
 Too         & $\to$ & \verb|too| $|$ $\epsilon$ \\
 Exp         & $\to$ & Exp \verb:|: Exp1 \\
@@ -43,8 +43,27 @@ Exp3        & $\to$ & \verb:~:Val $|$ Val \\
 Val         & $\to$ & \emph{Int} $|$ \emph{Id} \\
 \end{tabular}
 
+\begin{itemize}
+\item \emph{Int} is an integer, matching the regular expression pattern \verb:[0-9]+:
+\item \emph{Id} is a variable identifier, matching \verb:[a-zA-Z]+:
+\end{itemize}
+
 \section{Semantics}
+\subsection{Types}
+\subsubsection{Number}
+Numbers are unsigned integers of length 8 bits (ie: they can hold the range
+0-255). Furthermore underflow and overflow are undefined behaviours. All
+operators listed in the operators section can be used.
+
+\subsubsection{Letter}
+Although \verb:letter: appears as a type in the given examples, there are none
+in which its functionality is exhibited. Consequently, nothing can be inferred
+about this possible type, including whether it is a valid type or not!
+
+As such, it is not included in this version of the language specification.
+
 \subsection{Statements}
+\subsection{Operators}
 
 
 \begin{enumerate}
