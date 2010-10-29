@@ -1,0 +1,10 @@
+*.aux
+*.log
+*.hi
+# Auto-generated
+Lexer.hs
+Lexer
+Parser.hs
+Parser
+main
+

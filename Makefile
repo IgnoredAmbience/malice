@@ -1,10 +1,13 @@
-all: lexer
+all: main
 
-lexer: lexer.hs
-	ghc -o lexer lexer.hs
+main: main.hs Lexer.hs Parser.hs
+	ghc --make main.hs
 
-lexer.hs: lexer.x
-	alex lexer.x
+Lexer.hs: Lexer.x
+	alex -g Lexer.x
+
+Parser.hs: Parser.y
+	happy -g Parser.y
 
 clean:
-	rm *.o *.hi lexer.hs
+	rm *.o *.hi Lexer.hs Parser.hs
