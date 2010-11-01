@@ -1,4 +1,5 @@
 module Types where
+import Data.Map (Map)
 
 data Token = TokDot
            | TokComma
@@ -27,15 +28,15 @@ data Statement = Declare String Type
   deriving (Eq,Show)
 data Type = Number
   deriving (Eq,Show)
-data Exp = Or Exp Exp
-         | Xor Exp Exp
-         | And Exp Exp
-         | Add Exp Exp
-         | Times Exp Exp
-         | Div Exp Exp
-         | Mod Exp Exp
-         | Not Exp
+data Exp = UnOp UnOp Exp
+         | BinOp BinOp Exp Exp
          | Int Int
          | Var String 
   deriving (Eq,Show)
+data BinOp = Or | Xor | And | Add | Times | Div | Mod
+  deriving (Eq,Show)
+data UnOp = Not
+  deriving (Eq,Show)
+
+type SymbolTbl = Map String Type
 

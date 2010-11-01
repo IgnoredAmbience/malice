@@ -55,20 +55,20 @@ Type        : 'number'                        { Number }
 Too         : 'too'                           {}
             | {- empty -}                     {}
 
-Exp         : Exp '|' Exp1                    { Or $1 $3 }
-            | Exp '^' Exp1                    { Xor $1 $3 }
-            | Exp '&' Exp1                    { And $1 $3 }
+Exp         : Exp '|' Exp1                    { BinOp Or $1 $3 }
+            | Exp '^' Exp1                    { BinOp Xor $1 $3 }
+            | Exp '&' Exp1                    { BinOp And $1 $3 }
             | Exp1                            { $1  }
 
-Exp1        : Exp1 '+' Exp2                   { Add $1 $3 }
+Exp1        : Exp1 '+' Exp2                   { BinOp Add $1 $3 }
             | Exp2                            { $1 }
 
-Exp2        : Exp2 '*' Exp3                   { Times $1 $3 }
-            | Exp2 '/' Exp3                   { Div $1 $3 }
-            | Exp2 '%' Exp3                   { Mod $1 $3 }
+Exp2        : Exp2 '*' Exp3                   { BinOp Times $1 $3 }
+            | Exp2 '/' Exp3                   { BinOp Div $1 $3 }
+            | Exp2 '%' Exp3                   { BinOp Mod $1 $3 }
             | Exp3                            { $1 }
 
-Exp3        : '~' Exp3                        { Not $2 }
+Exp3        : '~' Exp3                        { UnOp Not $2 }
             | Val                             { $1 }
 
 Val         : INT                             { Int $1 }
