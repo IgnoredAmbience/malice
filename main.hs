@@ -1,5 +1,6 @@
 module Main where
 import Lexer
 import Parser
-main = getContents >>= print . parse . Lexer.alexScanTokens
+import Text.Groom
+main = getContents >>= putStrLn . groom . parse . alexScanTokens
 
