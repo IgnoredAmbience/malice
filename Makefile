@@ -1,7 +1,7 @@
 all: main
 
 main: main.hs Lexer.hs Parser.hs
-	ghc --make main.hs
+	ghc -Wall --make main.hs
 
 Lexer.hs: Lexer.x
 	alex -g Lexer.x
