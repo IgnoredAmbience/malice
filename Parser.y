@@ -43,7 +43,7 @@ Terminator  : ','                             {}
             | 'but'                           {}
             | 'then'                          {}
 
-Output      : 'Alice found' Exp '.'           { Result $2 }
+Output      : 'Alice found' Exp '.'           { $2 }
 
 Statement   : ID 'was a' Type Too             { Declare $1 $3 }
             | ID 'became' Exp                 { Assign $1 $3 }
@@ -58,18 +58,18 @@ Too         : 'too'                           {}
 Exp         : Exp '|' Exp1                    { Or $1 $3 }
             | Exp '^' Exp1                    { Xor $1 $3 }
             | Exp '&' Exp1                    { And $1 $3 }
-            | Exp1                            { Exp1 $1 }
+            | Exp1                            { $1  }
 
 Exp1        : Exp1 '+' Exp2                   { Add $1 $3 }
-            | Exp2                            { Exp2 $1 }
+            | Exp2                            { $1 }
 
 Exp2        : Exp2 '*' Exp3                   { Times $1 $3 }
             | Exp2 '/' Exp3                   { Div $1 $3 }
             | Exp2 '%' Exp3                   { Mod $1 $3 }
-            | Exp3                            { Exp3 $1 }
+            | Exp3                            { $1 }
 
 Exp3        : '~' Exp3                        { Not $2 }
-            | Val                             { Val $1 }
+            | Val                             { $1 }
 
 Val         : INT                             { Int $1 }
             | ID                              { Var $1 }
