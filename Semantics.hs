@@ -10,7 +10,7 @@ semantics (Program stmts exp)
 
 semanticSt :: SymbolTbl -> Statement -> SymbolTbl 
 semanticSt st (Declare x t)
-  | Map.member x st = error "Semantic error - variable already defined"
+  | Map.member x st = error $ "Semantic error - " ++ show x ++ " is already defined"
   | otherwise       = Map.insert x t st
 semanticSt st (Assign _ exp) = semanticExp st exp
 semanticSt st _              = st
