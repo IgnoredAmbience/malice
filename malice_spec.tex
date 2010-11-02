@@ -27,36 +27,41 @@ Statement   & $\to$ & \emph{Id} `\verb|was a|' Type Too \\
             &  $|$  & \emph{Id} `\verb|ate|' \\
             &  $|$  & \emph{Id} `\verb|drank|' \\
 \\
-Type        & $\to$ & `\verb|number|' \\
+Type        & $\to$ & `\verb|number|' $|$ `\verb|letter|' \\
 Too         & $\to$ & `\verb|too|' $|$ $\epsilon$ \\
-Exp         & $\to$ & Exp `\verb:|:' Exp1 \\
-            &  $|$  & Exp `\verb:^:' Exp1 \\
-            &  $|$  & Exp `\verb:&:' Exp1 \\
-            &  $|$  & Exp1 \\
+Exp         & $\to$ & Exp `\verb:|:' Exp1 $|$ Exp1 \\
+Exp1        & $\to$ & Exp1 `\verb:^:' Exp2 $|$ Exp2 \\
+Exp2        & $\to$ & Exp2 `\verb:&:' Exp3 $|$ Exp3 \\
 \\
-Exp1        & $\to$ & Exp1 `\verb:+:' Exp2 \\
-            &  $|$  & Exp2 \\
+Exp3        & $\to$ & Exp3 `\verb:+:' Exp4 \\
+            &  $|$  & Exp3 `\verb:-:' Exp4 \\
+            &  $|$  & Exp4 \\
 \\
-Exp2        & $\to$ & Exp2 `\verb:*:' Exp3 \\
-            &  $|$  & Exp2 `\verb:/:' Exp3 \\
-            &  $|$  & Exp2 `\verb:%:' Exp3 \\
-            &  $|$  & Exp3 \\
+Exp4        & $\to$ & Exp4 `\verb:*:' Exp5 \\
+            &  $|$  & Exp4 `\verb:/:' Exp5 \\
+            &  $|$  & Exp4 `\verb:%:' Exp5 \\
+            &  $|$  & Exp5 \\
 \\
-Exp3        & $\to$ & `\verb:~:' Exp3 $|$ Val \\
+Exp5        & $\to$ & `\verb:~:' Exp5 $|$ Val \\
 Val         & $\to$ & \emph{Int} $|$ \emph{Id} \\
+            & $|$   & `\verb|'|' \emph{Character} `\verb|'|'
 \end{tabular}
 
 \begin{itemize}
 \item \emph{Int} is an integer, matching the regular expression pattern \verb:[0-9]+:
 \item \emph{Id} is a variable identifier, matching \verb:[a-zA-Z_]+:
+\item \emph{Character} is any ASCII character
 \end{itemize}
 
 \section{Semantics}
 \subsection{Types}
 \subsubsection{Number}
-Numbers are unsigned integers of length 8 bits (ie: they can hold the range
-0-255). Furthermore underflow and overflow are undefined behaviours. All
-operators listed in the operators section can be used.
+Numbers are signed integers of length 32 bits. Underflow and overflow are
+undefined behaviours. All operators listed in the operators section can be
+used.
+
+However, when returned via the program's exit code, all numbers will be
+returned as unsigned 8 bit integers, from the lowest 8 bits of the number.
 
 \subsubsection{Letter}
 Although \verb:letter: appears as a type in the given examples, there are no
@@ -64,7 +69,13 @@ working exapmles in which its functionality is exhibited. Consequently, nothing
 can be inferred about this possible type, including whether it is a valid type
 or not!
 
-As such, it is not included in this version of the language specification.
+However, it was stated at a later date that the letter type is to be stored as
+an 8-bit ASCII value. This means that it is a valid type. The BNF above has been
+modified to include it.
+
+The given examples infer that it is not permitted to mix number and letter types
+over a single operation. Nothing can be inferred about how the letter type should
+be returned, nor what operators it is compatible with.
 
 \subsection{Statements}
 An Alice program is defined as a list of statements followed by the output
@@ -123,16 +134,19 @@ Operator & Operation   & Precedence \\
 \hline
 \hline
 \verb:|: & Bitwise OR  & 1 \\
-\verb:^: & Bitwise XOR & 1 \\
-\verb:&: & Bitwise AND & 1 \\
 \hline
-\verb:+: & Addition    & 2 \\
+\verb:&: & Bitwise XOR & 2 \\
 \hline
-\verb:*: & Multiplication & 3 \\
-\verb:/: & Division       & 3 \\
-\verb:%: & Modulo         & 3 \\
+\verb:^: & Bitwise AND & 3 \\
 \hline
-\verb:~: & Bitwise NOT    & 4 \\
+\verb:+: & Addition    & 4 \\
+\verb:-: & Subtraction & 4 \\
+\hline
+\verb:*: & Multiplication & 5 \\
+\verb:/: & Division       & 5 \\
+\verb:%: & Modulo         & 5 \\
+\hline
+\verb:~: & Bitwise NOT    & 6 \\
 \end{tabular}
 
 \begin{itemize}
@@ -145,9 +159,10 @@ left-associative.
 
 \item All operators are binary, except for Bitwise NOT which is unary.
 
-\item The only precedences that were determinable from the example files given
-were those for the \verb|+| and \verb|*| operators. All other precedences have
-been taken from the common usage, or where none is obvious, from the C language.
+\item All operator precedences (except for Bitwise NOT) taken from example
+programs given, including the additional ones provided after the Milestone 1
+deadline. Bitwise NOT presumed to have the highest precedence, since it is the
+only Unary Operator.
 
 \item Underflow and overflow conditions are undefined.
 \end{itemize}
