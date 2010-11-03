@@ -29,22 +29,15 @@ Statement   & $\to$ & \emph{Id} `\verb|was a|' Type Too \\
 \\
 Type        & $\to$ & `\verb|number|' $|$ `\verb|letter|' \\
 Too         & $\to$ & `\verb|too|' $|$ $\epsilon$ \\
+\\
 Exp         & $\to$ & Exp `\verb:|:' Exp1 $|$ Exp1 \\
 Exp1        & $\to$ & Exp1 `\verb:^:' Exp2 $|$ Exp2 \\
 Exp2        & $\to$ & Exp2 `\verb:&:' Exp3 $|$ Exp3 \\
-\\
-Exp3        & $\to$ & Exp3 `\verb:+:' Exp4 \\
-            &  $|$  & Exp3 `\verb:-:' Exp4 \\
-            &  $|$  & Exp4 \\
-\\
-Exp4        & $\to$ & Exp4 `\verb:*:' Exp5 \\
-            &  $|$  & Exp4 `\verb:/:' Exp5 \\
-            &  $|$  & Exp4 `\verb:%:' Exp5 \\
-            &  $|$  & Exp5 \\
+Exp3        & $\to$ & Exp3 (`\verb:+:' $|$ `\verb:-:') Exp4 $|$ Exp4 \\
+Exp4        & $\to$ & Exp4 (`\verb:*:' $|$ `\verb:/:' $|$ `\verb:%:') Exp5 $|$ Exp5 \\
 \\
 Exp5        & $\to$ & `\verb:~:' Exp5 $|$ Val \\
-Val         & $\to$ & \emph{Int} $|$ \emph{Id} \\
-            & $|$   & `\verb|'|' \emph{Character} `\verb|'|'
+Val         & $\to$ & \emph{Int} $|$ \emph{Id} $|$ `\verb|'|' \emph{Character} `\verb|'|'
 \end{tabular}
 
 \begin{itemize}
