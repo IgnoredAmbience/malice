@@ -18,11 +18,11 @@
 \section{BNF Grammar} 
 \begin{tabular}{lcl}
 Program     & $\to$ & Statements Output \\
-Statements  & $\to$ & Statement Terminator Statements \\
+Statements  & $\to$ & Statement Terminator Statements $| \epsilon$ \\
 Terminator  & $\to$ & `\verb:,:' $|$ `\verb:.:' $|$ `\verb:and:' $|$ `\verb:but:' $|$ `\verb:then:' \\
-Output      & $\to$ & `\verb:Alice found:' Exp `\verb:.:' \\
+Output      & $\to$ & `\verb:Alice:' `\verb:found:' Exp `\verb:.:' \\
 \\
-Statement   & $\to$ & \emph{Id} `\verb|was a|' Type Too \\
+Statement   & $\to$ & \emph{Id} `\verb|was|' `\verb|a|' Type Too \\
             &  $|$  & \emph{Id} `\verb|became|' Exp \\
             &  $|$  & \emph{Id} `\verb|ate|' \\
             &  $|$  & \emph{Id} `\verb|drank|' \\
