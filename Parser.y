@@ -12,14 +12,18 @@ import Types
     'and'       { TokAnd }
     'but'       { TokBut }
     'then'      { TokThen }
-    'Alice found' { TokAliceFound }
-    'was a'     { TokWasA }
+    'Alice'     { TokAlice }
+    'found'     { TokFound }
+    'was'       { TokWas }
+    'a'         { TokA }
     'became'    { TokBecame }
     'ate'       { TokAte }
     'drank'     { TokDrank }
-    'number'    { TokNumber }
+    'number'    { TokNumberType }
+    'letter'    { TokLetterType }
     'too'       { TokToo }
     '+'         { TokBinOp '+' }
+    '-'         { TokBinOp '-' }
     '*'         { TokBinOp '*' }
     '|'         { TokBinOp '|' }
     '^'         { TokBinOp '^' }
@@ -29,6 +33,7 @@ import Types
     '~'         { TokUnOp '~'  }
     INT         { TokInt $$    }
     ID          { TokId $$     }
+    CHAR        { TokChar $$   }
 
 %%
 
@@ -43,36 +48,43 @@ Terminator  : ','                             {}
             | 'but'                           {}
             | 'then'                          {}
 
-Output      : 'Alice found' Exp '.'           { $2 }
+Output      : 'Alice' 'found' Exp '.'         { $3 }
 
-Statement   : ID 'was a' Type Too             { Declare $1 $3 }
+Statement   : ID 'was' 'a' Type Too           { Declare $1 $4 }
             | ID 'became' Exp                 { Assign $1 $3 }
             | ID 'ate'                        { Increment $1 }
             | ID 'drank'                      { Decrement $1 }
 
 Type        : 'number'                        { Number }
+            | 'letter'                        { Letter }
 
 Too         : 'too'                           {}
             | {- empty -}                     {}
 
 Exp         : Exp '|' Exp1                    { BinOp Or $1 $3 }
-            | Exp '^' Exp1                    { BinOp Xor $1 $3 }
-            | Exp '&' Exp1                    { BinOp And $1 $3 }
             | Exp1                            { $1  }
 
-Exp1        : Exp1 '+' Exp2                   { BinOp Add $1 $3 }
-            | Exp2                            { $1 }
+Exp1        : Exp1 '^' Exp2                   { BinOp Xor $1 $3 }
+            | Exp2                            { $1  }
 
-Exp2        : Exp2 '*' Exp3                   { BinOp Times $1 $3 }
-            | Exp2 '/' Exp3                   { BinOp Div $1 $3 }
-            | Exp2 '%' Exp3                   { BinOp Mod $1 $3 }
-            | Exp3                            { $1 }
+Exp2        : Exp2 '&' Exp3                   { BinOp And $1 $3 }
+            | Exp3                            { $1  }
 
-Exp3        : '~' Exp3                        { UnOp Not $2 }
+Exp3        : Exp3 '+' Exp4                   { BinOp Add $1 $3 }
+            | Exp3 '-' Exp4                   { BinOp Subtract $1 $3 }
+            | Exp4                            { $1 }
+
+Exp4        : Exp4 '*' Exp5                   { BinOp Times $1 $3 }
+            | Exp4 '/' Exp5                   { BinOp Div $1 $3 }
+            | Exp4 '%' Exp5                   { BinOp Mod $1 $3 }
+            | Exp5                            { $1 }
+
+Exp5        : '~' Exp5                        { UnOp Not $2 }
             | Val                             { $1 }
 
 Val         : INT                             { Int $1 }
             | ID                              { Var $1 }
+            | CHAR                            { Char $1 }
 
 {
 parseError :: [Token] -> a

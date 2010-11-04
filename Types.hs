@@ -6,17 +6,21 @@ data Token = TokDot
            | TokAnd
            | TokBut
            | TokThen
-           | TokAliceFound
-           | TokWasA
+           | TokAlice
+           | TokFound
+           | TokWas
+           | TokA
            | TokBecame
            | TokAte
            | TokDrank
-           | TokNumber
+           | TokNumberType
+           | TokLetterType
            | TokToo
            | TokUnOp Char
            | TokBinOp Char
            | TokInt Int
            | TokId String
+           | TokChar Char
   deriving (Eq,Show)
 
 data Program = Program [Statement] Exp 
@@ -26,14 +30,15 @@ data Statement = Declare String Type
                | Increment String 
                | Decrement String 
   deriving (Eq,Show)
-data Type = Number
+data Type = Number | Letter
   deriving (Eq,Show)
 data Exp = UnOp UnOp Exp
          | BinOp BinOp Exp Exp
          | Int Int
          | Var String 
+         | Char Char
   deriving (Eq,Show)
-data BinOp = Or | Xor | And | Add | Times | Div | Mod
+data BinOp = Or | Xor | And | Add | Subtract | Times | Div | Mod
   deriving (Eq,Show)
 data UnOp = Not
   deriving (Eq,Show)
