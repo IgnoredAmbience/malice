@@ -17,7 +17,7 @@ semanticSt st _              = st
 
 semanticExp :: SymbolTbl -> Exp -> SymbolTbl
 semanticExp st (Var x)
-  | Map.notMember x st = error "Semantic error - use of undefined variable"
+  | Map.notMember x st = error $ "Semantic error - use of undefined variable  " ++ show x
   | otherwise          = st
 
 semanticExp st (UnOp _ exp)    = semanticExp st exp
