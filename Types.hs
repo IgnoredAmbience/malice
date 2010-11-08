@@ -38,7 +38,7 @@ data Exp = UnOp UnOp Exp
          | Var String 
          | Char Char
   deriving (Eq,Show)
-data BinOp = Or | Xor | And | Add | Subtract | Times | Div | Mod
+data BinOp = Or | Xor | And | Add | Sub | Mul | Div | Mod
   deriving (Eq,Show)
 data UnOp = Not
   deriving (Eq,Show)

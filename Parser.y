@@ -71,10 +71,10 @@ Exp2        : Exp2 '&' Exp3                   { BinOp And $1 $3 }
             | Exp3                            { $1  }
 
 Exp3        : Exp3 '+' Exp4                   { BinOp Add $1 $3 }
-            | Exp3 '-' Exp4                   { BinOp Subtract $1 $3 }
+            | Exp3 '-' Exp4                   { BinOp Sub $1 $3 }
             | Exp4                            { $1 }
 
-Exp4        : Exp4 '*' Exp5                   { BinOp Times $1 $3 }
+Exp4        : Exp4 '*' Exp5                   { BinOp Mul $1 $3 }
             | Exp4 '/' Exp5                   { BinOp Div $1 $3 }
             | Exp4 '%' Exp5                   { BinOp Mod $1 $3 }
             | Exp5                            { $1 }
