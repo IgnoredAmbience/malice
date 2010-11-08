@@ -1,7 +1,17 @@
 module Output where
 import Types
 
-outputASM :: [Inst] -> [String]
-outputASM = map toASM
+outputASM :: [SInst] -> [String]
+outputASM = concatMap toASM
 
-toASM :: Inst -> String
+toASM :: SInst -> [String]
+
+toASM SNot = "not [esp]" : []
+toASM SOr  = "pop eax" : "or [esp],eax" : []
+toASM SXor = "pop eax" : "xor [esp],eax" : []
+toASM SAnd = "pop eax" : "and [esp],eax" : []
+toASM SAdd = "pop eax" : "add [esp],eax" : []
+toASM SSub = "pop eax" : 'sub [esp],eax" : []
+--toASM SMul = 
+--toASM SDiv = 
+--toASM SMod = 
