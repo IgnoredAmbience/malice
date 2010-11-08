@@ -45,3 +45,5 @@ data UnOp = Not
 
 type SymbolTbl = Map String Type
 
+data SInst = SOr | SXor | SAnd | SAdd | SSub | STimes | SDiv | SMod | SNot
+		  | SPushI Int | SPushN {-- name type --} | SPop {-- name type --}
