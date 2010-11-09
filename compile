@@ -1,7 +1,5 @@
 #!/bin/sh
 path=`dirname $0`
 name=${1%.*}
-$path/main -f $1 > $name.asm
-nasm -f ELF -o $name.o $name.asm 
-ld -melf_i386 -N -o $name $name.o
+$path/main -f $1 > $name.asm && nasm -f ELF -o $name.o $name.asm && ld -melf_i386 -N -o $name $name.o
 
