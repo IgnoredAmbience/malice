@@ -2,7 +2,7 @@ module Output where
 import Types
 
 outputASM :: [SInst] -> [String]
-outputASM = concatMap toASM ++ ["pop ebx"] ++ ["mov eax,1"] ++ ["int 0x80"]
+outputASM = ["section .text"] ++ ["global _start"] ++ ["_start:"] ++ concatMap toASM ++ ["pop ebx"] ++ ["mov eax,1"] ++ ["int 0x80"]
 
 toASM :: SInst -> [String]
 
