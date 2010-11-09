@@ -1,8 +1,9 @@
 module Output where
 import Types
+import Data.Map (mapWithKey, elems)
 
 outputASM :: [SInst] -> [String]
-outputASM = ["section .text"] ++ ["global _start"] ++ ["_start:"] ++ concatMap toASM ++ ["pop ebx"] ++ ["mov eax,1"] ++ ["int 0x80"]
+outputASM insts = ["section .text"] ++ ["global _start"] ++ ["_start:"] ++ concatMap toASM insts ++ ["pop ebx"] ++ ["mov eax,1"] ++ ["int 0x80"]
 
 toASM :: SInst -> [String]
 
@@ -21,3 +22,11 @@ toASM SDec = ["dec [esp]"]
 toASM (SPushI i) = ["push " ++ (show i)]
 toASM (SPushN n) = ["push [" ++ n ++ "]"]
 toASM (SPop n) = ["pop [" ++ n ++ "]"]
+
+outputSymbolTable :: SymbolTbl -> [String]
+outputSymbolTable st = "section .bss" : elems (mapWithKey symbolToDef st)
+
+symbolToDef :: String -> Type -> String
+symbolToDef name Number = name ++ ":\tresd\t1"
+symbolToDef name Letter = name ++ ":\tresb\t1"
+
