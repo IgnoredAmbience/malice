@@ -1,6 +1,6 @@
 #!/bin/sh
 name=${1%.*}
-main -f $1 > $name.asm
-nasm -f ELF -o $name.o $name.asm 
+$PWD/main -f $1 > $name.asm
+nasm -f elf -o $name.o $name.asm 
 ld -melf_i386 -N -o $name $name.o
 
