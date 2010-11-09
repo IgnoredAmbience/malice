@@ -10,7 +10,7 @@ Parser.hs: Parser.y
 	happy -g Parser.y
 
 clean:
-	rm -f *.o *.hi
+	rm -f *.o *.hi main
 
 clean-all: clean
 	rm -f Lexer.hs Parser.hs
