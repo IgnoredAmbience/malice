@@ -10,7 +10,7 @@ outputASM insts = ["section .text"] ++ ["global _start"] ++ ["_start:"] ++ conca
 
 toASM :: SInst -> [String]
 
-toASM SNot = ["not [esp]"]
+toASM SNot = ["not dword [esp]"]
 toASM SOr  = ["pop eax"] ++ ["or [esp],eax"]
 toASM SXor = ["pop eax"] ++ ["xor [esp],eax"]
 toASM SAnd = ["pop eax"] ++ ["and [esp],eax"]
@@ -19,8 +19,8 @@ toASM SSub = ["pop eax"] ++ ["sub [esp],eax"]
 toASM SMul = ["pop eax"] ++ ["imul eax,[esp]"] ++ ["mov [esp],eax"]
 toASM SDiv = ["pop ebx"] ++ ["pop eax"] ++ ["xor edx,edx"] ++ ["idiv ebx"] ++ ["push eax"]
 toASM SMod = ["pop ebx"] ++ ["pop eax"] ++ ["xor edx,edx"] ++ ["idiv ebx"] ++ ["push edx"]
-toASM SInc = ["inc [esp]"]
-toASM SDec = ["dec [esp]"]
+toASM SInc = ["inc dword [esp]"]
+toASM SDec = ["dec dword [esp]"]
 
 toASM (SPushI i) = ["mov eax," ++ (show i)] ++ ["push eax"]
 toASM (SPushN n) = ["mov eax,[" ++ n ++ "]"] ++ ["push eax"]
