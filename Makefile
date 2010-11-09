@@ -1,6 +1,6 @@
 all: main
 
-main: main.hs Lexer.hs Parser.hs Semantics.hs Types.hs Translator.hs
+main: main.hs Lexer.hs Parser.hs Semantics.hs Translator.hs Output.hs Types.hs 
 	ghc --make main.hs
 
 Lexer.hs: Lexer.x
@@ -10,4 +10,7 @@ Parser.hs: Parser.y
 	happy -g Parser.y
 
 clean:
-	rm *.o *.hi Lexer.hs Parser.hs
+	rm -f *.o *.hi
+
+clean-all: clean
+	rm -f Lexer.hs Parser.hs
