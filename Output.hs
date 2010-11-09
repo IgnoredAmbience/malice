@@ -22,9 +22,9 @@ toASM SMod = ["pop ebx"] ++ ["pop eax"] ++ ["xor edx,edx"] ++ ["idiv ebx"] ++ ["
 toASM SInc = ["inc [esp]"]
 toASM SDec = ["dec [esp]"]
 
-toASM (SPushI i) = ["push " ++ (show i)]
-toASM (SPushN n) = ["push [" ++ n ++ "]"]
-toASM (SPop n) = ["pop " ++ n]
+toASM (SPushI i) = ["mov eax," ++ (show i)] ++ ["push eax"]
+toASM (SPushN n) = ["mov eax,[" ++ n ++ "]"] ++ ["push eax"]
+toASM (SPop n) = ["pop eax"] ++ ["mov [" ++ n ++ "],eax"]
 
 outputSymbolTable :: SymbolTbl -> [String]
 outputSymbolTable st = "section .bss" : elems (mapWithKey symbolToDef st)
