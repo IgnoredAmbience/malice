@@ -1,5 +1,7 @@
-\documentclass[a4wide, 11pt]{article}
-\usepackage{a4}
+\documentclass[a4paper,11pt]{article}
+\usepackage{fullpage, titling, amsmath, footnote}
+\makesavenoteenv{tabular}
+\setlength{\droptitle}{-50pt}
 \setlength{\parskip}{0.3cm}
 \setlength{\parindent}{0cm}
 
@@ -17,33 +19,50 @@
 
 \section{BNF Grammar} 
 \begin{tabular}{lcl}
-Program     & $\to$ & Statements Output \\
+Program     & $\to$ & Statements \\
 Statements  & $\to$ & Statement Terminator Statements $| \epsilon$ \\
-Terminator  & $\to$ & `\verb:,:' $|$ `\verb:.:' $|$ `\verb:and:' $|$ `\verb:but:' $|$ `\verb:then:' \\
-Output      & $\to$ & `\verb:Alice:' `\verb:found:' Exp `\verb:.:' \\
+Terminator  & $\to$ & `\verb:,:' $|$ `\verb:.:' $|$ `\verb:and:' $|$ `\verb:but:' $|$ `\verb:then:' $|$ `\verb|?|'\\
 \\
 Statement   & $\to$ & \emph{Id} `\verb|was|' `\verb|a|' Type Too \\
-            &  $|$  & \emph{Id} `\verb|became|' Exp \\
-            &  $|$  & \emph{Id} `\verb|ate|' \\
-            &  $|$  & \emph{Id} `\verb|drank|' \\
+            &  $|$  & \emph{Id} `\verb|had|' Exp Type \\
+            &  $|$  & Variable `\verb|became|' Exp \\
+            &  $|$  & Variable `\verb|ate|' \\
+            &  $|$  & Variable `\verb|drank|' \\
+            &  $|$  & `\verb|what|' `\verb|was|' Variable \\
+            &  $|$  & String `\verb|thought|' `\verb|Alice|' \\
+            &  $|$  & Printable `\verb|said|' `\verb|Alice|' \\
+            &  $|$  & Printable `\verb|spoke|' \\
+            &  $|$  & `\verb:Alice:' `\verb:found:' Exp \\
+            &  $|$  & `\verb|eventually|' `\verb|(|' Exp `\verb|)|' `\verb|because|' Statements `\verb|enough|' `\verb|times|' \\
+            &  $|$  & `\verb|perhaps|' `\verb|(|' Exp `\verb|)|' `\verb|so|' Statements EndIf \\
+ElseIf      & $\to$ & `\verb|maybe|' `\verb|(|' Exp `\verb|)|' `\verb|so|' Statements EndIf $|$ Statements EndIf \\
+EndIf       & $\to$ & `\verb|or|' ElseIf $|$ `\verb|Alice was unsure which|' \\
 \\
-Type        & $\to$ & `\verb|number|' $|$ `\verb|letter|' \\
+Type        & $\to$ & `\verb|number|' $|$ `\verb|letter|' $|$ `\verb|sentence|' \\
 Too         & $\to$ & `\verb|too|' $|$ $\epsilon$ \\
 \\
-Exp         & $\to$ & Exp `\verb:|:' Exp1 $|$ Exp1 \\
-Exp1        & $\to$ & Exp1 `\verb:^:' Exp2 $|$ Exp2 \\
-Exp2        & $\to$ & Exp2 `\verb:&:' Exp3 $|$ Exp3 \\
-Exp3        & $\to$ & Exp3 (`\verb:+:' $|$ `\verb:-:') Exp4 $|$ Exp4 \\
-Exp4        & $\to$ & Exp4 (`\verb:*:' $|$ `\verb:/:' $|$ `\verb:%:') Exp5 $|$ Exp5 \\
+Exp         & $\to$ & Exp `\verb:||:' Exp1 $|$ Exp1 \\
+Exp1        & $\to$ & Exp1 `\verb:&&:' Exp2 $|$ Exp2 \\
+Exp2        & $\to$ & Exp2 `\verb:|:' Exp3 $|$ Exp3 \\
+Exp3        & $\to$ & Exp3 `\verb:^:' Exp4 $|$ Exp4 \\
+Exp4        & $\to$ & Exp4 `\verb:&:' Exp5 $|$ Exp5 \\
+Exp5        & $\to$ & Exp5 (`\verb:==:' $|$ `\verb:!=:') Exp6 $|$ Exp6 \\
+Exp6        & $\to$ & Exp6 (`\verb:<:' $|$ `\verb:<=:' $|$ `\verb:>:' $|$ `\verb:>=:') Exp7 $|$ Exp7 \\
+Exp7        & $\to$ & Exp7 (`\verb:+:' $|$ `\verb:-:') Exp8 $|$ Exp8 \\
+Exp8        & $\to$ & Exp8 (`\verb:*:' $|$ `\verb:/:' $|$ `\verb:%:') Exp9 $|$ Exp9 \\
+Exp9        & $\to$ & `\verb:~:' Exp9 $|$ Val \\
 \\
-Exp5        & $\to$ & `\verb:~:' Exp5 $|$ Val \\
-Val         & $\to$ & \emph{Int} $|$ \emph{Id} $|$ `\verb|'|' \emph{Character} `\verb|'|'
+Val         & $\to$ & Variable $|$ \emph{Int} $|$ Character $|$ String \\
+Variable    & $\to$ & \emph{Id} $|$ \emph{Id} `\verb|'s|' Exp `\verb|piece|' \\
+Character   & $\to$ & `\verb|'|' \emph{Char} `\verb|'|' \\
+String      & $\to$ & `\verb|"|' Str `\verb|"|' \\
+Str         & $\to$ & \emph{Char} Str $|$ $\epsilon$ 
 \end{tabular}
 
 \begin{itemize}
 \item \emph{Int} is an integer, matching the regular expression pattern \verb:[0-9]+:
 \item \emph{Id} is a variable identifier, matching \verb:[a-zA-Z_]+:
-\item \emph{Character} is any ASCII character
+\item \emph{Char} is any ASCII character
 \end{itemize}
 
 \section{Semantics}
@@ -70,9 +89,14 @@ The given examples imply that it is not permitted to mix number and letter types
 over a single operation. Nothing can be inferred about how the letter type should
 be returned, nor what operators it is compatible with.
 
+\subsubsection{Sentences}
+This is a string type, again, nothing can be inferred about them.
+
+\subsubsection{Arrays}
+TODO
+
 \subsection{Statements}
-An Alice program is defined as a list of statements followed by the output
-statement.
+An Alice program is defined as a list of statements.
 
 \subsubsection{Output}
 The \verb:Alice found: statement is analogous to the return statement of
@@ -82,6 +106,9 @@ value.
 For example:\\
 \verb:  Alice found 3.:\\
 returns the value 3.
+
+When returning from the program as a whole, it returns the value of the expression
+using the program's termination code.
 
 \subsubsection{Declaration}
 The \verb:was a: statement declares the preceding identifier as a variable of
@@ -121,7 +148,11 @@ For example:\\
 \verb:  x ate:\\
 if $x$ is 5, $x$ will become 6
 
+\subsubsection{Control Flow}
+TODO
+
 \subsection{Expressions}
+TO UPDATE
 \begin{tabular}{ccc}
 Operator & Operation   & Precedence \\
 \hline
