@@ -1,6 +1,8 @@
 *.aux
 *.log
 *.hi
+*.o
+
 # Auto-generated
 Lexer.hs
 Lexer
