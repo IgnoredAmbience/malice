@@ -19,9 +19,14 @@
 
 \section{BNF Grammar} 
 \begin{tabular}{lcl}
-Program     & $\to$ & Statements \\
+Program     & $\to$ & Statements Functions \\
 Statements  & $\to$ & Statement Terminator Statements $| \epsilon$ \\
 Terminator  & $\to$ & `\verb:,:' $|$ `\verb:.:' $|$ `\verb:and:' $|$ `\verb:but:' $|$ `\verb:then:' $|$ `\verb|?|'\\
+Functions   & $\to$ & Functions Function $|$ Functions Lambda $|$ $\epsilon$ \\
+Function    & $\to$ & `\verb|The room|' \emph{Id} `\verb|(|' Parameters `\verb|) contained a|' Type Statements \\
+Parameters  & $\to$ & Parameters `\verb|,|' Parameter $|$ $\epsilon$ \\
+Parameter   & $\to$ & Type \emph{Id} \\
+Lambda      & $\to$ & `\verb|The Looking-Glass|' \emph{Id} `\verb|changed a|' Type Statements \\
 \\
 Statement   & $\to$ & \emph{Id} `\verb|was|' `\verb|a|' Type Too \\
             &  $|$  & \emph{Id} `\verb|had|' Exp Type \\
@@ -30,8 +35,8 @@ Statement   & $\to$ & \emph{Id} `\verb|was|' `\verb|a|' Type Too \\
             &  $|$  & Variable `\verb|drank|' \\
             &  $|$  & `\verb|what|' `\verb|was|' Variable \\
             &  $|$  & String `\verb|thought|' `\verb|Alice|' \\
-            &  $|$  & Printable `\verb|said|' `\verb|Alice|' \\
-            &  $|$  & Printable `\verb|spoke|' \\
+            &  $|$  & Exp `\verb|said|' `\verb|Alice|' \\
+            &  $|$  & Exp `\verb|spoke|' \\
             &  $|$  & `\verb:Alice:' `\verb:found:' Exp \\
             &  $|$  & `\verb|eventually|' `\verb|(|' Exp `\verb|)|' `\verb|because|' Statements `\verb|enough|' `\verb|times|' \\
             &  $|$  & `\verb|perhaps|' `\verb|(|' Exp `\verb|)|' `\verb|so|' Statements EndIf \\
@@ -50,7 +55,7 @@ Exp5        & $\to$ & Exp5 (`\verb:==:' $|$ `\verb:!=:') Exp6 $|$ Exp6 \\
 Exp6        & $\to$ & Exp6 (`\verb:<:' $|$ `\verb:<=:' $|$ `\verb:>:' $|$ `\verb:>=:') Exp7 $|$ Exp7 \\
 Exp7        & $\to$ & Exp7 (`\verb:+:' $|$ `\verb:-:') Exp8 $|$ Exp8 \\
 Exp8        & $\to$ & Exp8 (`\verb:*:' $|$ `\verb:/:' $|$ `\verb:%:') Exp9 $|$ Exp9 \\
-Exp9        & $\to$ & `\verb:~:' Exp9 $|$ Val \\
+Exp9        & $\to$ & (`\verb:~:' $|$ `\verb:-:') Exp9 $|$ Val \\
 \\
 Val         & $\to$ & Variable $|$ \emph{Int} $|$ Character $|$ String \\
 Variable    & $\to$ & \emph{Id} $|$ \emph{Id} `\verb|'s|' Exp `\verb|piece|' \\
@@ -150,6 +155,10 @@ if $x$ is 5, $x$ will become 6
 
 \subsubsection{Control Flow}
 TODO
+
+\subsubsection{Functions}
+
+\subsection{Scoping}
 
 \subsection{Expressions}
 TO UPDATE

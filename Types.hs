@@ -3,9 +3,12 @@ import Data.Map (Map)
 
 data Token = TokDot
            | TokComma
+           | TokQuestion
            | TokAnd
            | TokBut
            | TokThen
+           | TokToo
+
            | TokAlice
            | TokFound
            | TokWas
@@ -13,14 +16,47 @@ data Token = TokDot
            | TokBecame
            | TokAte
            | TokDrank
+           | TokWhat
+           | TokThought
+           | TokSaid
+           | TokSpoke
+
+           | TokHad
+           | TokArrS
+           | TokPiece
+
+           | TokThe
+           | TokRoom
+           | TokContained
+           | TokLookingGlass
+           | TokChanged
+
+           | TokEventually
+           | TokBecause
+           | TokEnough
+           | TokTimes
+
+           | TokPerhaps
+           | TokSo
+           | TokOr
+           | TokMaybe
+           | TokUnsure
+           | TokWhich
+
            | TokNumberType
            | TokLetterType
-           | TokToo
+           | TokSentenceType
+
            | TokUnOp Char
            | TokBinOp Char
+
+           | TokLBrace
+           | TokRBrace
+
            | TokInt Int
            | TokId String
            | TokChar Char
+           | TokStr String
   deriving (Eq,Show)
 
 data Program = Program [Statement] Exp 
