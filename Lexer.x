@@ -37,15 +37,17 @@ tokens :-
   The                   { \s -> TokThe }
   room                  { \s -> TokRoom }
   contained             { \s -> TokContained }
-  Looking-Glass         { \s -> TokLookingGlass }
+  "Looking-Glass"       { \s -> TokLookingGlass }
   changed               { \s -> TokChanged }
+  went                  { \s -> TokWent }
+  through               { \s -> TokThrough }
 
   eventually            { \s -> TokEventually }
   because               { \s -> TokBecause }
-  enough                { \s -> TokEnough }
-  times                 { \s -> TokTimes }
+  enough$white+times    { \s -> TokEnoughTimes }
 
   perhaps               { \s -> TokPerhaps }
+  either                { \s -> TokEither }
   so                    { \s -> TokSo }
   or                    { \s -> TokOr }
   maybe                 { \s -> TokMaybe }
@@ -57,12 +59,14 @@ tokens :-
   sentence              { \s -> TokSentenceType }
 
   $digit+               { \s -> TokInt (read s) }
-  [\+\-\*\|\^\&\/\%\<\>] { \s -> TokBinOp (head s) }
-  ==                    { \s -> TokBinOp '=' }
-  \<=                   { \s -> TokBinOp 'l' }
-  \>=                   { \s -> TokBinOp 'g' }
-  !=                    { \s -> TokBinOp '!' }
-  [\~]                  { \s -> TokUnOp (head s) }
+  [\+\-\*\|\^\&\/\%\<\>] { \s -> TokOp (head s) }
+  "||"                  { \s -> TokOp 'o' }
+  &&                    { \s -> TokOp 'a' }
+  ==                    { \s -> TokOp '=' }
+  \<=                   { \s -> TokOp 'l' }
+  \>=                   { \s -> TokOp 'g' }
+  !=                    { \s -> TokOp '!' }
+  [\~]                  { \s -> TokOp (head s) }
   [\(]                  { \s -> TokLBrace }
   [\)]                  { \s -> TokRBrace }
   [$alpha\_]+           { \s -> TokId s }

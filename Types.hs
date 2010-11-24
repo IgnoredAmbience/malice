@@ -30,13 +30,15 @@ data Token = TokDot
            | TokContained
            | TokLookingGlass
            | TokChanged
+           | TokWent
+           | TokThrough
 
            | TokEventually
            | TokBecause
-           | TokEnough
-           | TokTimes
+           | TokEnoughTimes
 
            | TokPerhaps
+           | TokEither
            | TokSo
            | TokOr
            | TokMaybe
@@ -47,8 +49,7 @@ data Token = TokDot
            | TokLetterType
            | TokSentenceType
 
-           | TokUnOp Char
-           | TokBinOp Char
+           | TokOp Char
 
            | TokLBrace
            | TokRBrace
@@ -59,24 +60,40 @@ data Token = TokDot
            | TokStr String
   deriving (Eq,Show)
 
-data Program = Program [Statement] Exp 
+data Program = Program [Statement] [Function]
+  deriving (Eq,Show)
+data Function = Function String Type [(Type, String)] [Statement]
+              | Lambda String Type [Statement]
   deriving (Eq,Show)
 data Statement = Declare String Type
-               | Assign String Exp
-               | Increment String 
-               | Decrement String 
+               | DeclareArr String Type Exp     -- Name, Type, Length
+               | Assign Variable Exp
+               | Increment Variable 
+               | Decrement Variable 
+               | LambdaApply String Variable
+               | Input Variable
+               | Output Exp
+               | Return Exp
+               | LoopUntil Exp [Statement]
+               | If Exp [Statement] [Statement]
+               | Comment String
   deriving (Eq,Show)
-data Type = Number | Letter
+data Type = Number | Letter | Sentence
   deriving (Eq,Show)
 data Exp = UnOp UnOp Exp
          | BinOp BinOp Exp Exp
+         | FunctionCall String [Exp]
+         | Variable Variable
          | Int Int
-         | Var String 
          | Char Char
+         | Str String
   deriving (Eq,Show)
-data BinOp = Or | Xor | And | Add | Sub | Mul | Div | Mod
+data Variable = Var String
+              | VarArr String Exp
   deriving (Eq,Show)
-data UnOp = Not
+data BinOp = Or | Xor | And | Add | Sub | Mul | Div | Mod | LOr | LAnd | Eq | Neq | Lt | Lte | Gt | Gte
+  deriving (Eq,Show)
+data UnOp = Not | Neg
   deriving (Eq,Show)
 
 type SymbolTbl = Map String Type
