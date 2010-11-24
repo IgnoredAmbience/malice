@@ -20,7 +20,7 @@
 \section{BNF Grammar} 
 \begin{tabular}{lcl}
 Program     & $\to$ & Statements Functions \\
-Statements  & $\to$ & Statement Terminator Statements $| \epsilon$ \\
+Statements  & $\to$ & Statements Statement Terminator $|$ $\epsilon$ \\
 Terminator  & $\to$ & `\verb:,:' $|$ `\verb:.:' $|$ `\verb:and:' $|$ `\verb:but:' $|$ `\verb:then:' $|$ `\verb|?|'\\
 Functions   & $\to$ & Functions Function $|$ Functions Lambda $|$ $\epsilon$ \\
 Function    & $\to$ & `\verb|The room|' \emph{Id} `\verb|(|' ParameterDefs `\verb|) contained a|' Type Statements \\
@@ -33,13 +33,14 @@ Statement   & $\to$ & \emph{Id} `\verb|was|' `\verb|a|' Type Too \\
             &  $|$  & Variable `\verb|became|' Exp \\
             &  $|$  & Variable `\verb|ate|' \\
             &  $|$  & Variable `\verb|drank|' \\
+            &  $|$  & Variable `\verb|went through|' \emph{Id} \\
             &  $|$  & `\verb|what|' `\verb|was|' Variable \\
             &  $|$  & String `\verb|thought|' `\verb|Alice|' \\
             &  $|$  & Exp `\verb|said|' `\verb|Alice|' \\
             &  $|$  & Exp `\verb|spoke|' \\
             &  $|$  & `\verb:Alice:' `\verb:found:' Exp \\
             &  $|$  & `\verb|eventually|' `\verb|(|' Exp `\verb|)|' `\verb|because|' Statements `\verb|enough|' `\verb|times|' \\
-            &  $|$  & `\verb|perhaps|' `\verb|(|' Exp `\verb|)|' `\verb|so|' Statements EndIf \\
+            &  $|$  & (`\verb|perhaps|' $|$ `\verb|either|') `\verb|(|' Exp `\verb|)|' `\verb|so|' Statements EndIf \\
 ElseIf      & $\to$ & `\verb|maybe|' `\verb|(|' Exp `\verb|)|' `\verb|so|' Statements EndIf $|$ Statements EndIf \\
 EndIf       & $\to$ & `\verb|or|' ElseIf $|$ `\verb|Alice was unsure which|' \\
 \\
