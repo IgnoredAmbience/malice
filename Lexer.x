@@ -67,7 +67,7 @@ tokens :-
   [\~]                  { \s -> TokOp (head s) }
   [\(]                  { \s -> TokLBrace }
   [\)]                  { \s -> TokRBrace }
-  [$alpha\_]+           { \s -> TokId s }
+  [$alpha\_][$alpha\_$digit]* { \s -> TokId s }
   \'.\'                 { \s -> TokChar (s!!1) }
   \"[^\"]*\"            { \s -> TokStr s }
 
