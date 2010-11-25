@@ -193,7 +193,7 @@ Parameters  : Parameters Terminator Exp       { $1 ++ [$3] }
 
 {
 --parseError :: [Token] -> a
-parseError (t:ts) = error $ "Parse error, unexpected " ++ show t
+parseError ((tok,pos):ts) = error $ "Parse error, unexpected " ++ show tok ++ " at line " ++ show (line pos) ++ ", column " ++ show (lineIdx pos)
 
 --main = getContents >>= print . parse . Lexer.alexScanTokens
 }
