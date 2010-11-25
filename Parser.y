@@ -34,6 +34,7 @@ import Types
     'The'       { (TokThe, _) }
     'room'      { (TokRoom, _) }
     'contained' { (TokContained, _) }
+    'spider'    { (TokSpider, _) }
     'Looking-Glass' { (TokLookingGlass, _) }
     'changed'   { (TokChanged, _) }
     'went'      { (TokWent, _) }
@@ -103,7 +104,10 @@ ParameterDefs : ParameterDefs ',' ParameterDef { $1 ++ [$3] }
               | ParameterDef                  { [$1] }
               | {- empty -}                   { [] }
 
-ParameterDef : Type ID                        { ($1, $2) }
+ParameterDef : ParameterType ID               { ($1, $2) }
+            
+ParameterType : 'spider' Type                 { Array $2 }
+              | Type                          { $1 }
 
 Lambda      : 'The' 'Looking-Glass' ID 'changed' 'a' Type Statements { Lambda $3 $6 $7 }
 

@@ -35,6 +35,7 @@ tokens :-
   The                   { \s -> TokThe }
   room                  { \s -> TokRoom }
   contained             { \s -> TokContained }
+  spider                { \s -> TokSpider }
   "Looking-Glass"       { \s -> TokLookingGlass }
   changed               { \s -> TokChanged }
   went                  { \s -> TokWent }

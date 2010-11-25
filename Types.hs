@@ -28,6 +28,7 @@ data Token = TokDot
            | TokThe
            | TokRoom
            | TokContained
+           | TokSpider
            | TokLookingGlass
            | TokChanged
            | TokWent
@@ -85,7 +86,7 @@ data Statement = Declare String Type
                | If Exp [Statement] [Statement]
                | Comment String
   deriving (Eq,Show)
-data Type = Number | Letter | Sentence
+data Type = Number | Letter | Sentence | Array Type
   deriving (Eq,Show)
 data Exp = UnOp UnOp Exp
          | BinOp BinOp Exp Exp
