@@ -60,6 +60,12 @@ data Token = TokDot
            | TokStr String
   deriving (Eq,Show)
 
+data AlexPosn = AlexPn { index :: !Int
+                       , line :: !Int
+                       , lineIdx :: !Int
+                       }
+  deriving (Eq,Show)
+
 data Program = Program [Statement] [Function]
   deriving (Eq,Show)
 data Function = Function String Type [(Type, String)] [Statement]

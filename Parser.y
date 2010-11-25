@@ -2,82 +2,82 @@
 module Parser where
 import Types
 }
-%name parse 
-%tokentype { Token }
+%name parse
+%tokentype { (Token, AlexPosn) }
 %error { parseError }
 
 %token
-    '.'         { TokDot }
-    ','         { TokComma }
-    '?'         { TokQuestion }
-    'and'       { TokAnd }
-    'but'       { TokBut }
-    'then'      { TokThen }
-    'too'       { TokToo }
+    '.'         { (TokDot, _) }
+    ','         { (TokComma, _) }
+    '?'         { (TokQuestion, _) }
+    'and'       { (TokAnd, _) }
+    'but'       { (TokBut, _) }
+    'then'      { (TokThen, _) }
+    'too'       { (TokToo, _) }
 
-    'Alice'     { TokAlice }
-    'found'     { TokFound }
-    'was'       { TokWas }
-    'a'         { TokA }
-    'became'    { TokBecame }
-    'ate'       { TokAte }
-    'drank'     { TokDrank }
-    'what'      { TokWhat }
-    'thought'   { TokThought }
-    'said'      { TokSaid }
-    'spoke'     { TokSpoke }
+    'Alice'     { (TokAlice, _) }
+    'found'     { (TokFound, _) }
+    'was'       { (TokWas, _) }
+    'a'         { (TokA, _) }
+    'became'    { (TokBecame, _) }
+    'ate'       { (TokAte, _) }
+    'drank'     { (TokDrank, _) }
+    'what'      { (TokWhat, _) }
+    'thought'   { (TokThought, _) }
+    'said'      { (TokSaid, _) }
+    'spoke'     { (TokSpoke, _) }
 
-    'had'       { TokHad }
-    's'         { TokArrS }
-    'piece'     { TokPiece }
+    'had'       { (TokHad, _) }
+    's'         { (TokArrS, _) }
+    'piece'     { (TokPiece, _) }
 
-    'The'       { TokThe }
-    'room'      { TokRoom }
-    'contained' { TokContained }
-    'Looking-Glass' { TokLookingGlass }
-    'changed'   { TokChanged }
-    'went'      { TokWent }
-    'through'   { TokThrough }
+    'The'       { (TokThe, _) }
+    'room'      { (TokRoom, _) }
+    'contained' { (TokContained, _) }
+    'Looking-Glass' { (TokLookingGlass, _) }
+    'changed'   { (TokChanged, _) }
+    'went'      { (TokWent, _) }
+    'through'   { (TokThrough, _) }
 
-    'eventually' { TokEventually }
-    'because'   { TokBecause }
-    'enough times'    { TokEnoughTimes }
+    'eventually' { (TokEventually, _) }
+    'because'   { (TokBecause, _) }
+    'enough times'    { (TokEnoughTimes, _) }
 
-    'perhaps'   { TokPerhaps }
-    'either'    { TokEither }
-    'so'        { TokSo }
-    'or'        { TokOr }
-    'maybe'     { TokMaybe }
-    'unsure'    { TokUnsure }
-    'which'     { TokWhich }
+    'perhaps'   { (TokPerhaps, _) }
+    'either'    { (TokEither, _) }
+    'so'        { (TokSo, _) }
+    'or'        { (TokOr, _) }
+    'maybe'     { (TokMaybe, _) }
+    'unsure'    { (TokUnsure, _) }
+    'which'     { (TokWhich, _) }
 
-    'number'    { TokNumberType }
-    'letter'    { TokLetterType }
-    'sentence'  { TokSentenceType }
+    'number'    { (TokNumberType, _) }
+    'letter'    { (TokLetterType, _) }
+    'sentence'  { (TokSentenceType, _) }
 
-    '+'         { TokOp '+' }
-    '-'         { TokOp '-' }
-    '*'         { TokOp '*' }
-    '|'         { TokOp '|' }
-    '^'         { TokOp '^' }
-    '&'         { TokOp '&' }
-    '/'         { TokOp '/' }
-    '%'         { TokOp '%' }
-    '~'         { TokOp '~' }
-    '<'         { TokOp '<' }
-    '>'         { TokOp '>' }
-    '=='        { TokOp '=' }
-    '<='        { TokOp 'l' }
-    '>='        { TokOp 'g' }
-    '!='        { TokOp '!' }
-    '||'        { TokOp 'o' }
-    '&&'        { TokOp 'a' }
-    '('         { TokLBrace }
-    ')'         { TokRBrace }
-    INT         { TokInt $$  }
-    ID          { TokId $$   }
-    CHAR        { TokChar $$ }
-    STR         { TokStr $$  }
+    '+'         { (TokOp '+', _) }
+    '-'         { (TokOp '-', _) }
+    '*'         { (TokOp '*', _) }
+    '|'         { (TokOp '|', _) }
+    '^'         { (TokOp '^', _) }
+    '&'         { (TokOp '&', _) }
+    '/'         { (TokOp '/', _) }
+    '%'         { (TokOp '%', _) }
+    '~'         { (TokOp '~', _) }
+    '<'         { (TokOp '<', _) }
+    '>'         { (TokOp '>', _) }
+    '=='        { (TokOp '=', _) }
+    '<='        { (TokOp 'l', _) }
+    '>='        { (TokOp 'g', _) }
+    '!='        { (TokOp '!', _) }
+    '||'        { (TokOp 'o', _) }
+    '&&'        { (TokOp 'a', _) }
+    '('         { (TokLBrace, _) }
+    ')'         { (TokRBrace, _) }
+    INT         { (TokInt $$, _) }
+    ID          { (TokId  $$, _) }
+    CHAR        { (TokChar $$, _) }
+    STR         { (TokStr $$, _) }
 
 %%
 
@@ -192,8 +192,8 @@ Parameters  : Parameters Terminator Exp       { $1 ++ [$3] }
             | {- empty -}                     { [] }
 
 {
-parseError :: [Token] -> a
-parseError _ = error "Parse error"
+--parseError :: [Token] -> a
+parseError (t:ts) = error $ "Parse error, unexpected " ++ show t
 
 --main = getContents >>= print . parse . Lexer.alexScanTokens
 }
