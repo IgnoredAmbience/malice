@@ -3,84 +3,101 @@ module Lexer where
 import Types
 }
 
-%wrapper "basic"
-
 $digit = 0-9      -- digits
 $alpha = [a-zA-Z]   -- alphabetic characters
 
 tokens :-
   $white+               ;
-  \.                    { \s -> TokDot }
-  \,                    { \s -> TokComma }
-  \?                    { \s -> TokQuestion }
-  and                   { \s -> TokAnd }
-  but                   { \s -> TokBut }
-  then                  { \s -> TokThen }
-  too                   { \s -> TokToo }
+  \.                    { \p s -> TokDot p }
+  \,                    { \p s -> TokComma p }
+  \?                    { \p s -> TokQuestion p }
+  and                   { \p s -> TokAnd p }
+  but                   { \p s -> TokBut p }
+  then                  { \p s -> TokThen p }
+  too                   { \p s -> TokToo p }
 
-  Alice                 { \s -> TokAlice }
-  found                 { \s -> TokFound }
-  was                   { \s -> TokWas }
-  a                     { \s -> TokA }
-  became                { \s -> TokBecame }
-  ate                   { \s -> TokAte }
-  drank                 { \s -> TokDrank }
-  what                  { \s -> TokWhat }
-  thought               { \s -> TokThought }
-  said                  { \s -> TokSaid }
-  spoke                 { \s -> TokSpoke }
+  Alice                 { \p s -> TokAlice p }
+  found                 { \p s -> TokFound p }
+  was                   { \p s -> TokWas p }
+  a                     { \p s -> TokA p }
+  became                { \p s -> TokBecame p }
+  ate                   { \p s -> TokAte p }
+  drank                 { \p s -> TokDrank p }
+  what                  { \p s -> TokWhat p }
+  thought               { \p s -> TokThought p }
+  said                  { \p s -> TokSaid p }
+  spoke                 { \p s -> TokSpoke p }
 
-  had                   { \s -> TokHad }
-  \'s                   { \s -> TokArrS }
-  piece                 { \s -> TokPiece }
+  had                   { \p s -> TokHad p }
+  \'s                   { \p s -> TokArrS p }
+  piece                 { \p s -> TokPiece p }
 
-  The                   { \s -> TokThe }
-  room                  { \s -> TokRoom }
-  contained             { \s -> TokContained }
-  "Looking-Glass"       { \s -> TokLookingGlass }
-  changed               { \s -> TokChanged }
-  went                  { \s -> TokWent }
-  through               { \s -> TokThrough }
+  The                   { \p s -> TokThe p }
+  room                  { \p s -> TokRoom p }
+  contained             { \p s -> TokContained p }
+  "Looking-Glass"       { \p s -> TokLookingGlass p }
+  changed               { \p s -> TokChanged p }
+  went                  { \p s -> TokWent p }
+  through               { \p s -> TokThrough p }
 
-  eventually            { \s -> TokEventually }
-  because               { \s -> TokBecause }
-  enough$white+times    { \s -> TokEnoughTimes }
+  eventually            { \p s -> TokEventually p }
+  because               { \p s -> TokBecause p }
+  enough$white+times    { \p s -> TokEnoughTimes p }
 
-  perhaps               { \s -> TokPerhaps }
-  either                { \s -> TokEither }
-  so                    { \s -> TokSo }
-  or                    { \s -> TokOr }
-  maybe                 { \s -> TokMaybe }
-  unsure                { \s -> TokUnsure }
-  which                 { \s -> TokWhich }
+  perhaps               { \p s -> TokPerhaps p }
+  either                { \p s -> TokEither p }
+  so                    { \p s -> TokSo p }
+  or                    { \p s -> TokOr p }
+  maybe                 { \p s -> TokMaybe p }
+  unsure                { \p s -> TokUnsure p }
+  which                 { \p s -> TokWhich p }
 
-  number                { \s -> TokNumberType }
-  letter                { \s -> TokLetterType }
-  sentence              { \s -> TokSentenceType }
+  number                { \p s -> TokNumberType p }
+  letter                { \p s -> TokLetterType p }
+  sentence              { \p s -> TokSentenceType p }
 
-  $digit+               { \s -> TokInt (read s) }
-  [\+\-\*\|\^\&\/\%\<\>] { \s -> TokOp (head s) }
-  "||"                  { \s -> TokOp 'o' }
-  &&                    { \s -> TokOp 'a' }
-  ==                    { \s -> TokOp '=' }
-  \<=                   { \s -> TokOp 'l' }
-  \>=                   { \s -> TokOp 'g' }
-  !=                    { \s -> TokOp '!' }
-  [\~]                  { \s -> TokOp (head s) }
-  [\(]                  { \s -> TokLBrace }
-  [\)]                  { \s -> TokRBrace }
-  [$alpha\_]+           { \s -> TokId s }
-  \'.\'                 { \s -> TokChar (s!!1) }
-  \"[^\"]*\"            { \s -> TokStr s }
+  $digit+               { \p s -> TokInt p (read s) }
+  [\+\-\*\|\^\&\/\%\<\>] { \p s -> TokOp p (head s) }
+  "||"                  { \p s -> TokOp p 'o' }
+  &&                    { \p s -> TokOp p 'a' }
+  ==                    { \p s -> TokOp p '=' }
+  \<=                   { \p s -> TokOp p 'l' }
+  \>=                   { \p s -> TokOp p 'g' }
+  !=                    { \p s -> TokOp p '!' }
+  [\~]                  { \p s -> TokOp p (head s) }
+  [\(]                  { \p s -> TokLBrace p }
+  [\)]                  { \p s -> TokRBrace p }
+  [$alpha\_]+           { \p s -> TokId p s }
+  \'.\'                 { \p s -> TokChar p (s!!1) }
+  \"[^\"]*\"            { \p s -> TokStr p s }
 
 {
--- Each action has type :: String -> Token
+-- Taken from the posn wrapper, since AlexPosn conflicts with definition in Types
+type AlexInput = (AlexPosn,     -- current position,
+                  Char,         -- previous char
+                  String)       -- current input string
 
--- The token type:
+alexInputPrevChar :: AlexInput -> Char
+alexInputPrevChar (p,c,s) = c
 
-{-
-main = do
-  s <- getContents
-  print (alexScanTokens s)
--}
+alexGetChar :: AlexInput -> Maybe (Char,AlexInput)
+alexGetChar (p,c,[]) = Nothing
+alexGetChar (p,_,(c:s))  = let p' = alexMove p c in p' `seq`
+                                Just (c, (p', c, s))
+alexStartPos :: AlexPosn
+alexStartPos = AlexPn 0 1 1
+
+alexMove :: AlexPosn -> Char -> AlexPosn
+alexMove (AlexPn a l c) '\t' = AlexPn (a+1)  l     (((c+7) `div` 8)*8+1)
+alexMove (AlexPn a l c) '\n' = AlexPn (a+1) (l+1)   1
+alexMove (AlexPn a l c) _    = AlexPn (a+1)  l     (c+1)
+
+--alexScanTokens :: String -> [token]
+alexScanTokens str = go (alexStartPos,'\n',str)
+  where go inp@(pos,_,str) =
+          case alexScan inp 0 of
+                AlexEOF -> []
+                AlexError _ -> error $ "lexical error on line " ++ show (alexPosnLine pos) ++ " at column " ++ show (alexPosnChar pos)
+                AlexSkip  inp' len     -> go inp'
+                AlexToken inp' len act -> act pos (take len str) : go inp'
 }

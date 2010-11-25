@@ -1,64 +1,70 @@
 module Types where
 import Data.Map (Map)
 
-data Token = TokDot
-           | TokComma
-           | TokQuestion
-           | TokAnd
-           | TokBut
-           | TokThen
-           | TokToo
+data Token = TokDot AlexPosn
+           | TokComma AlexPosn
+           | TokQuestion AlexPosn
+           | TokAnd AlexPosn
+           | TokBut AlexPosn
+           | TokThen AlexPosn
+           | TokToo AlexPosn
 
-           | TokAlice
-           | TokFound
-           | TokWas
-           | TokA
-           | TokBecame
-           | TokAte
-           | TokDrank
-           | TokWhat
-           | TokThought
-           | TokSaid
-           | TokSpoke
+           | TokAlice AlexPosn
+           | TokFound AlexPosn
+           | TokWas AlexPosn
+           | TokA AlexPosn
+           | TokBecame AlexPosn
+           | TokAte AlexPosn
+           | TokDrank AlexPosn
+           | TokWhat AlexPosn
+           | TokThought AlexPosn
+           | TokSaid AlexPosn
+           | TokSpoke AlexPosn
 
-           | TokHad
-           | TokArrS
-           | TokPiece
+           | TokHad AlexPosn
+           | TokArrS AlexPosn
+           | TokPiece AlexPosn
 
-           | TokThe
-           | TokRoom
-           | TokContained
-           | TokLookingGlass
-           | TokChanged
-           | TokWent
-           | TokThrough
+           | TokThe AlexPosn
+           | TokRoom AlexPosn
+           | TokContained AlexPosn
+           | TokLookingGlass AlexPosn
+           | TokChanged AlexPosn
+           | TokWent AlexPosn
+           | TokThrough AlexPosn
 
-           | TokEventually
-           | TokBecause
-           | TokEnoughTimes
+           | TokEventually AlexPosn
+           | TokBecause AlexPosn
+           | TokEnoughTimes AlexPosn
 
-           | TokPerhaps
-           | TokEither
-           | TokSo
-           | TokOr
-           | TokMaybe
-           | TokUnsure
-           | TokWhich
+           | TokPerhaps AlexPosn
+           | TokEither AlexPosn
+           | TokSo AlexPosn
+           | TokOr AlexPosn
+           | TokMaybe AlexPosn
+           | TokUnsure AlexPosn
+           | TokWhich AlexPosn
 
-           | TokNumberType
-           | TokLetterType
-           | TokSentenceType
+           | TokNumberType AlexPosn
+           | TokLetterType AlexPosn
+           | TokSentenceType AlexPosn
 
-           | TokOp Char
+           | TokOp AlexPosn Char
 
-           | TokLBrace
-           | TokRBrace
+           | TokLBrace AlexPosn
+           | TokRBrace AlexPosn
 
-           | TokInt Int
-           | TokId String
-           | TokChar Char
-           | TokStr String
+           | TokInt AlexPosn Int
+           | TokId AlexPosn String
+           | TokChar AlexPosn Char
+           | TokStr AlexPosn String
   deriving (Eq,Show)
+
+data AlexPosn = AlexPn !Int !Int !Int -- AbsChar, Line, Char
+  deriving (Eq,Show)
+
+alexPosnLine (AlexPn _ l _) = l
+alexPosnChar (AlexPn _ _ c) = c
 
 data Program = Program [Statement] [Function]
   deriving (Eq,Show)
