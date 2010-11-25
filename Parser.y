@@ -110,6 +110,7 @@ Lambda      : 'The' 'Looking-Glass' ID 'changed' 'a' Type Statements { Lambda $3
 Statement   : ID 'was' 'a' Type Too           { Declare $1 $4 }
             | ID 'had' Exp Type               { DeclareArr $1 $4 $3 }
             | Variable 'became' Exp           { Assign $1 $3 }
+            | Exp                             { Call $1 }
             | Variable 'ate'                  { Increment $1 }
             | Variable 'drank'                { Decrement $1 }
             | Variable 'went' 'through' ID    { LambdaApply $4 $1 }

@@ -74,6 +74,7 @@ data Function = Function String Type [(Type, String)] [Statement]
 data Statement = Declare String Type
                | DeclareArr String Type Exp     -- Name, Type, Length
                | Assign Variable Exp
+               | Call Exp           -- Essentially null operation, except when a function called
                | Increment Variable 
                | Decrement Variable 
                | LambdaApply String Variable
