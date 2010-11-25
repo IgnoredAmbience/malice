@@ -174,8 +174,11 @@ Exp8        : Exp8 '*' Exp9                   { BinOp Mul $1 $3 }
             | Exp8 '%' Exp9                   { BinOp Mod $1 $3 }
             | Exp9                            { $1 }
 
-Exp9        : '~' Exp9                        { UnOp Not $2 }
-            | '-' Exp9                        { UnOp Neg $2 }
+Exp9        : '~' SubExp                      { UnOp Not $2 }
+            | '-' SubExp                      { UnOp Neg $2 }
+            | SubExp                          { $1 }
+
+SubExp      : '(' Exp ')'                     { $2 }
             | Val                             { $1 }
 
 Val         : INT                             { Int $1 }

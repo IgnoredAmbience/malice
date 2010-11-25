@@ -56,7 +56,8 @@ Exp5        & $\to$ & Exp5 (`\verb:==:' $|$ `\verb:!=:') Exp6 $|$ Exp6 \\
 Exp6        & $\to$ & Exp6 (`\verb:<:' $|$ `\verb:<=:' $|$ `\verb:>:' $|$ `\verb:>=:') Exp7 $|$ Exp7 \\
 Exp7        & $\to$ & Exp7 (`\verb:+:' $|$ `\verb:-:') Exp8 $|$ Exp8 \\
 Exp8        & $\to$ & Exp8 (`\verb:*:' $|$ `\verb:/:' $|$ `\verb:%:') Exp9 $|$ Exp9 \\
-Exp9        & $\to$ & (`\verb:~:' $|$ `\verb:-:') Exp9 $|$ Val \\
+Exp9        & $\to$ & (`\verb:~:' $|$ `\verb:-:') SubExp $|$ SubExp \\
+SubExp      & $\to$ & `\verb|(|' Exp `\verb|)|' $|$ Val \\
 \\
 Val         & $\to$ & Variable $|$ \emph{Int} $|$ Character $|$ String $|$ \emph{Id} `\verb|(|' Parameters `\verb|)|' \\
 Variable    & $\to$ & \emph{Id} $|$ \emph{Id} `\verb|'s|' Exp `\verb|piece|' \\
