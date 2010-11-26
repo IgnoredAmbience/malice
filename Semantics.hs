@@ -10,7 +10,7 @@ semantics (Program stmts funcs)
     where
       funcTbl = foldl addFunction Map.empty funcs
       mainTbl = foldl addStatement funcTbl stmts
-      funcTbls = map (foldl addStatement funcTbl) funcs
+      funcTbls = map (buildFunctionSymbolTbl funcTbl) funcs
 
 -- Add function definitions into (global) symbol table
 addFunction :: SymbolTbl -> Function -> SymbolTbl
@@ -18,7 +18,7 @@ addFunction st (Function name typ ps _)
   | Map.member name st = error $ "Semantic error - " ++ show name ++ "is already defined"
   | otherwise          = Map.insert name (FunctionType typ paramTypes) st
   where
-    paramTypes = map fst ps
+    paramTypes = map snd ps
 
 addFunction st (Lambda name typ _)
   | Map.member name st = error $ "Semantic error - " ++ show name ++ "is already defined"
@@ -37,19 +37,19 @@ buildFunctionSymbolTbl funcSt (Lambda _ typ stmts)
 
 -- Build symbol table from a list of statements
 stmtsSmbTbl :: SymbolTbl -> [Statement] -> SymbolTbl
-stmtsSmbTbl = foldl semanticSt
+stmtsSmbTbl = foldl addStatement
 
 -- Check statement against symbol table, building it as required
-semanticSt :: SymbolTbl -> Statement -> SymbolTbl 
-semanticSt st (Declare x t)
+addStatement :: SymbolTbl -> Statement -> SymbolTbl 
+addStatement st (Declare x t)
   | Map.member x st = error $ "Semantic error - " ++ show x ++ " is already defined"
   | otherwise       = Map.insert x t st
 
-semanticSt st (DeclareArr name typ size)
+addStatement st (DeclareArr name typ size)
   | Map.member name st = error $ "Semantic error - " ++ show name ++ " is already defined"
   | otherwise          = Map.insert name (Array typ) st
 
-semanticSt st (Assign var exp) 
+{-addStatement st (Assign var exp) 
   | Map.notMember var st = error $ "Semantic error - attempt to assign to undeclared variable " ++ show var
   | expType /= varType =
       error $ "Semantic error - declared type of " ++ show varType ++ " " ++ show var ++ " does not match inferred type " ++ show expType ++ " of expression"
@@ -57,15 +57,19 @@ semanticSt st (Assign var exp)
   where
     expType = semanticExp st exp
     varType = st Map.! var
+-}
 
-semanticSt st _              = st
+addStatement st _              = st
 
 
 
 semanticExp :: SymbolTbl -> Exp -> Type
 semanticExp _ (Int _)  = Number
 semanticExp _ (Char _) = Letter
-semanticExp st (Var x)
+semanticExp st (Variable (Var x))
+  | Map.notMember x st = error $ "Semantic error - use of undefined variable  " ++ show x
+  | otherwise          = st Map.! x
+semanticExp st (Variable (VarArr x _))
   | Map.notMember x st = error $ "Semantic error - use of undefined variable  " ++ show x
   | otherwise          = st Map.! x
 
