@@ -104,7 +104,7 @@ ParameterDefs : ParameterDefs ',' ParameterDef { $1 ++ [$3] }
               | ParameterDef                  { [$1] }
               | {- empty -}                   { [] }
 
-ParameterDef : ParameterType ID               { ($1, $2) }
+ParameterDef : ParameterType ID               { ($2, $1) }
             
 ParameterType : 'spider' Type                 { Array $2 }
               | Type                          { $1 }

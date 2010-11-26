@@ -69,7 +69,7 @@ data AlexPosn = AlexPn { index :: !Int
 
 data Program = Program [Statement] [Function]
   deriving (Eq,Show)
-data Function = Function String Type [(Type, String)] [Statement]
+data Function = Function String Type [(String, Type)] [Statement]
               | Lambda String Type [Statement]
   deriving (Eq,Show)
 data Statement = Declare String Type
@@ -86,7 +86,7 @@ data Statement = Declare String Type
                | If Exp [Statement] [Statement]
                | Comment String
   deriving (Eq,Show)
-data Type = Number | Letter | Sentence | Array Type
+data Type = Number | Letter | Sentence | Array Type | FunctionType Type [Type] | LambdaType Type
   deriving (Eq,Show)
 data Exp = UnOp UnOp Exp
          | BinOp BinOp Exp Exp
@@ -104,6 +104,8 @@ data BinOp = Or | Xor | And | Add | Sub | Mul | Div | Mod | LOr | LAnd | Eq | Ne
 data UnOp = Not | Neg
   deriving (Eq,Show)
 
+-- (Global vars, [Function vars])
+type ProgramSymbolTbl = (SymbolTbl, [SymbolTbl])
 type SymbolTbl = Map String Type
 
 data SInst = SOr | SXor | SAnd | SAdd | SSub | SMul | SDiv | SMod | SNot | SInc | SDec
