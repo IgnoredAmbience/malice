@@ -67,8 +67,7 @@ data AlexPosn = AlexPn { index :: !Int
                        }
   deriving (Eq,Show)
 
-data Program = Program [Statement] [Function]
-  deriving (Eq,Show)
+type Program = [Function]
 data Function = Function String Type [(String, Type)] [Statement]
               | Lambda String Type [Statement]
   deriving (Eq,Show)
@@ -104,7 +103,6 @@ data UnOp = Not | Neg
   deriving (Eq,Show)
 
 -- (Global vars, [Function vars])
-type ProgramSymbolTbl = (SymbolTbl, [SymbolTbl])
 type SymbolTbl = Map String Type
 
 data SInst = SOr | SXor | SAnd | SAdd | SSub | SMul | SDiv | SMod | SNot | SInc | SDec

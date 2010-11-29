@@ -4,13 +4,11 @@ import qualified Data.Map as Map
 
 -- Some of these repeated definitions could be probably cleaned up a bit
 
-semantics :: Program -> ProgramSymbolTbl
-semantics (Program stmts funcs)
-  = (mainTbl, funcTbls)
+semantics :: Program -> [SymbolTbl]
+semantics funcs
+  = map (buildFunctionSymbolTbl funcTbl) funcs
     where
       funcTbl = foldl addFunction Map.empty funcs
-      mainTbl = foldl addStatement funcTbl stmts
-      funcTbls = map (buildFunctionSymbolTbl funcTbl) funcs
 
 -- Add function definitions into (global) symbol table
 addFunction :: SymbolTbl -> Function -> SymbolTbl
