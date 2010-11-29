@@ -24,69 +24,75 @@ addFunction st (Lambda name typ _)
 -- Build symbol table for a function
 buildFunctionSymbolTbl :: SymbolTbl -> Function -> SymbolTbl
 buildFunctionSymbolTbl funcSt (Function _ _ params stmts)
-  = foldl addStatement st stmts
+  = foldl (addStatement 0) st stmts
     where
       st = Map.unionWithKey alreadyDefinedError funcSt (Map.fromList params) 
+
 buildFunctionSymbolTbl funcSt (Lambda _ typ stmts)
-  = foldl addStatement st stmts
+  = foldl (addStatement 0) st stmts
     where
       st = Map.unionWithKey alreadyDefinedError funcSt (Map.singleton "it" typ) 
 
 -- Build symbol table from a list of statements
-stmtsSmbTbl :: SymbolTbl -> [Statement] -> SymbolTbl
-stmtsSmbTbl = foldl addStatement
+stmtsSmbTbl :: Int -> SymbolTbl -> [Statement] -> SymbolTbl
+stmtsSmbTbl d = foldl (addStatement d)
 
 -- Check statement against symbol table, building it as required
-addStatement :: SymbolTbl -> Statement -> SymbolTbl 
-addStatement st (Declare x t)
-  = Map.insertWithKey alreadyDefinedError x t st
+addStatement :: Int -> SymbolTbl -> Statement -> SymbolTbl 
+addStatement d st (Declare x t)
+  | member && d == 0 = alreadyDefinedError x (st Map.! x) t
+  | member           = Map.insert (x ++ "_" ++ show d) t st
+  | otherwise        = Map.insert x t st
+  where
+    member = Map.member x st
 
-addStatement st (DeclareArr name typ size)
+addStatement d st (DeclareArr name typ size)
   = Map.insertWithKey alreadyDefinedError name (Array typ) st
 
-addStatement st (Assign var exp) 
+addStatement _ st (Assign var exp) 
   | castable vt et = st
   | otherwise      = semError $ "cannot assign expression of type " ++ show et ++ " to variable " ++ show var ++ " of type " ++ show vt
   where
     vt = typeOf st var
     et = expType st exp
 
-addStatement st (Call exp) = checkExp st exp
+addStatement _ st (Call exp) = checkExp st exp
 
-addStatement st (Increment var)
+addStatement _ st (Increment var)
   | not(isOperatable(typeOf st var)) = semError $ show var ++ " cannot eat."
   | otherwise                        = st
 
-addStatement st (Decrement var)
+addStatement _ st (Decrement var)
   | not(isOperatable(typeOf st var)) = semError $ show var ++ " cannot drink."
   | otherwise                        = st
 
-addStatement st (LambdaApply name var)
+addStatement _ st (LambdaApply name var)
   | checkLambda lt vt = semError $ show var ++ " (" ++ show vt ++ ") cannot go through the looking-glass " ++ show name ++ " (" ++ show lt ++ ")."
   | otherwise= st
   where
     LambdaType lt = Map.findWithDefault (undefinedLambError name) name st
     vt            = typeOf st var
 
-addStatement st (Input var)
+addStatement _ st (Input var)
   | not(isOperatable(typeOf st var)) = semError $ show var ++ " cannot be input."
   | otherwise                        = st
 
-addStatement st (Output exp)
+addStatement _ st (Output exp)
   | isPrintable $ expType st exp = st
   | otherwise                    = semError $ show exp ++ " is not printable."
 
-addStatement st (Return exp) = checkExp st exp
+addStatement _ st (Return exp) = checkExp st exp
 
 -- Fold loops and expressions back into global symbol table... Not exactly as its supposed to be done!
-addStatement st (LoopUntil exp sts) = stmtsSmbTbl st' sts
+addStatement d st (LoopUntil exp sts) = stmtsSmbTbl (d+1) st' sts
   where st' = checkExp st exp
 
-addStatement st (If exp thenSts elseSts) = stmtsSmbTbl st'' elseSts
+addStatement d st (If exp thenSts elseSts) = stmtsSmbTbl (d+1) st'' elseSts
   where
     st'  = checkExp st exp
-    st'' = stmtsSmbTbl st' thenSts
-addStatement st (Comment _) = st
+    st'' = stmtsSmbTbl (d+1) st' thenSts
+
+addStatement _ st (Comment _) = st
 
 expType :: SymbolTbl -> Exp -> Type
 expType st = fst . semanticExp st
