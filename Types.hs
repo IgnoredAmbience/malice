@@ -96,8 +96,7 @@ data Exp = UnOp UnOp Exp
          | Char Char
          | Str String
   deriving (Eq,Show)
-data Variable = Var { name :: String }
-              | VarArr { name :: String, exp :: Exp }
+data Variable = Var String | VarArr String Exp
   deriving (Eq,Show)
 data BinOp = Or | Xor | And | Add | Sub | Mul | Div | Mod | LOr | LAnd | Eq | Neq | Lt | Lte | Gt | Gte
   deriving (Eq,Show)

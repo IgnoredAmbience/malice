@@ -47,29 +47,47 @@ addStatement st (DeclareArr name typ size)
   = Map.insertWithKey alreadyDefinedError name (Array typ) st
 
 addStatement st (Assign var exp) 
-  | Map.notMember (name var) st = error $ "Semantic error - attempt to assign to undeclared variable " ++ show var
-  | eType /= varType =
-      error $ "Semantic error - declared type of " ++ show varType ++ " " ++ show var ++ " does not match inferred type " ++ show eType ++ " of expression"
-  | otherwise = st
+  | castable vt et = st
+  | otherwise      = semError $ "cannot assign expression of type " ++ show et ++ " to variable " ++ show var ++ " of type " ++ show vt
   where
-    eType = expType st exp
-    varType = st Map.! (name var)
+    vt = typeOf st var
+    et = expType st exp
 
 addStatement st (Call exp) = checkExp st exp
+
 addStatement st (Increment var)
-  | not(isOperatable(typeOf var st)) = semError $ show var ++ " cannot eat."
+  | not(isOperatable(typeOf st var)) = semError $ show var ++ " cannot eat."
   | otherwise                        = st
+
 addStatement st (Decrement var)
-  | not(isOperatable(typeOf var st)) = semError $ show var ++ " cannot drink."
+  | not(isOperatable(typeOf st var)) = semError $ show var ++ " cannot drink."
   | otherwise                        = st
-addStatement st (LambdaApply name var) = undefined
-addStatement st (Input var) = undefined
+
+addStatement st (LambdaApply name var)
+  | checkLambda lt vt = semError $ show var ++ " (" ++ show vt ++ ") cannot go through the looking-glass " ++ show name ++ " (" ++ show lt ++ ")."
+  | otherwise= st
+  where
+    LambdaType lt = Map.findWithDefault (undefinedLambError name) name st
+    vt            = typeOf st var
+
+addStatement st (Input var)
+  | not(isOperatable(typeOf st var)) = semError $ show var ++ " cannot be input."
+  | otherwise                        = st
+
 addStatement st (Output exp)
   | isPrintable $ expType st exp = st
-  | otherwise                    = semError "not printable"
-addStatement st (Return exp) = undefined
-addStatement st (LoopUntil exp sts) = undefined
-addStatement st (If exp thenSts elseSts) = undefined
+  | otherwise                    = semError $ show exp ++ " is not printable."
+
+addStatement st (Return exp) = checkExp st exp
+
+-- Fold loops and expressions back into global symbol table... Not exactly as its supposed to be done!
+addStatement st (LoopUntil exp sts) = stmtsSmbTbl st' sts
+  where st' = checkExp st exp
+
+addStatement st (If exp thenSts elseSts) = stmtsSmbTbl st'' elseSts
+  where
+    st'  = checkExp st exp
+    st'' = stmtsSmbTbl st' thenSts
 addStatement st (Comment _) = st
 
 expType :: SymbolTbl -> Exp -> Type
@@ -82,7 +100,7 @@ semanticExp :: SymbolTbl -> Exp -> (Type, SymbolTbl)
 semanticExp st (Int _)  = (Number, st)
 semanticExp st (Char _) = (Letter, st)
 semanticExp st (Str _)  = (Sentence, st)
-semanticExp st (Variable v) = (typeOf v st, st)
+semanticExp st (Variable v) = (typeOf st v, st)
 
 semanticExp st (UnOp op exp)    
   | isOperatable t = subExp
@@ -117,17 +135,29 @@ isOperatable Number = True
 isOperatable Letter = True
 isOperatable _  = False
 
-typeOf :: Variable -> SymbolTbl -> Type
-typeOf (Var x) st      = Map.findWithDefault (undefinedError x) x st
-typeOf (VarArr x _) st = t
+castable :: Type -> Type -> Bool
+castable Number Letter = True -- castWarning
+castable Letter Number = True
+castable x y
+  | x == y    = True
+  | otherwise = False
+
+checkLambda :: Type -> Type -> Bool
+checkLambda lt (Array vt) = lt /= vt
+checkLambda lt vt         = lt /= vt
+
+typeOf :: SymbolTbl -> Variable -> Type
+typeOf st (Var x)      = Map.findWithDefault (undefinedError x) x st
+typeOf st (VarArr x _) = t
   where Array t = Map.findWithDefault (undefinedError x) x st
 
 -- Error messages
 semError = error . (++) "Semantic error: " 
 alreadyDefinedError k old new = semError $ "cannot redefine " ++ show k ++ " as a " ++ show new ++ ", already defined as a " ++ show old ++ "."
 undefinedError x = semError $ "use of undefined variable " ++ show x
-undefinedFuncError x = semError $ "use of undefined function " ++ show x
+undefinedFuncError x = semError $ "use of undefined room " ++ show x
 typeInoperableError exp t op = semError $ "subexpression of type " ++ show t ++ " not compatible with " ++ show op ++ ". (Subexpression was: " ++ show exp ++ ")"
+undefinedLambError x = semError $ "use of undefined looking-glass " ++ show x
 
 --semWarning = "Semantic warning: "
 castWarning t t2 op = semError $ show t ++ " and " ++ show t2 ++ " not directly compatible over " ++ show op ++ " one will be recast."
