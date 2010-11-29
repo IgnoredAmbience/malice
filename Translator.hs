@@ -2,27 +2,64 @@ module Translator where
 import Types
 
 -- Translates statements/expressions/etc into a list of abstract Instructions
-translate :: Program -> [SInst]
-translate (Program statements return) = concatMap transStat statements ++ (transExp return)
+translate :: Program -> [SFn]
+translate (Program functions) = map transFunc functions
+
+transFunc :: Function -> [SInst]
+transFunc (Function name t args stats) =
+	[SLabel name] ++ {-pop args to their respective places, see transStat fncall-} ++ (concatMap transStat stats)
 
 transStat :: Statement -> [SInst]
-transStat (Declare _ _) = []
-transStat (Assign name exp) = (transExp exp) ++ [SPop name]
-transStat (Increment name) = [SPushN name] ++ [SInc] ++ [SPop name]
-transStat (Decrement name) = [SPushN name] ++ [SDec] ++ [SPop name]
+transStat (Declare _ _)                    = []
+
+transStat (Assign (Var name) exp)          = (transExp exp) ++ [SPop name]
+transStat (Assign (VarArr name index) exp) = (transExp exp) ++ (transExp index) ++ [SPop name]
+
+transStat (Increment (Var name))           = [SPushN name] ++ [SInc] ++ [SPop name]
+transStat (Increment (VarArr name index))  = (transExp index) ++ [SGet name] ++ [SInc] ++ (transExp index) ++ [SPut name]
+transStat (Decrement (Var name))           = [SPushN name] ++ [SDec] ++ [SPop name]
+transStat (Decrement (VarArr name index))  = (transExp index) ++ [SGet name] ++ [SDec] ++ (transExp index) ++ [SPut name]
+
+transStat (Call (FunctionCall label args)) = (concatMap transExp args) ++ [SCall label]
+transStat (Call _)                         = []
+
+transStat (Return exp)                     = (transExp exp) ++ [SRet]
+
+transStat (LambdaApply label arg)          = (transExp arg) ++ [SCall]
+
+transStat (Input (Var name))               =
+transStat (Input (VarArr name))            =
+
+transStat (Output exp)                     =
+
+transStat (LoopUntil cond body)            = [SLabel ] ++ (concatMap transStat body) ++ (transExp cond) ++ [ -- TODO
+
+transStat (If cond true false)             =
+
+transStat (Comment _)                      = []
 
 transExp :: Exp -> [SInst]
 transExp (Int i) = [SPushI i]
 transExp (Var name) = [SPushN name]
-transExp (UnOp Not exp) = (transExp exp) ++ [SNot]
-transExp (BinOp op exp1 exp2) = (transExp exp1) ++ (transExp exp2) ++ (opToSOp op)
+transExp (UnOp op exp) = (transExp exp) ++ (transUnOp op)
+transExp (BinOp op exp1 exp2) = (transExp exp1) ++ (transExp exp2) ++ (transOp op)
 
-opToSOp :: BinOp -> [SInst]
-opToSOp Or  = [SOr]
-opToSOp Xor = [SXor]
-opToSOp And = [SAnd]
-opToSOp Add = [SAdd]
-opToSOp Sub = [SSub]
-opToSOp Mul = [SMul]
-opToSOp Div = [SDiv]
-opToSOp Mod = [SMod]
+transUnOp :: UnOp -> [SInst]
+transUnOp Not = [SNot]
+transUnOp Neg = [SNeg]
+
+transOp :: BinOp -> [SInst]
+transOp Or   = [SOr]
+transOp Xor  = [SXor]
+transOp And  = [SAnd]
+transOp Add  = [SAdd]
+transOp Sub  = [SSub]
+transOp Mul  = [SMul]
+transOp Div  = [SDiv]
+transOp Mod  = [SMod]
+transOp LOr  = [SLOr]
+transOp LAnd = [SLand]
+transOp Lt   = [SLt]
+transOp Lte  = [SLte]
+transOp Gt   = [SGt]
+transOp Gte  = [SGte]

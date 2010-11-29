@@ -105,7 +105,10 @@ data UnOp = Not | Neg
 -- (Global vars, [Function vars])
 type SymbolTbl = Map String Type
 
-data SInst = SOr | SXor | SAnd | SAdd | SSub | SMul | SDiv | SMod | SLor | SLAnd | SEq | SNeq | SLt | SLte | SGt | SGte
-           | SNot | SNeg | SInc | SDec
-		   | SPushI Int | SPushN String | SPop String
+type SFn = [SInst]
+
+data SInst = SOr | SXor | SAnd | SAdd | SSub | SMul | SDiv | SMod | SLor | SLAnd | SEq | SNeq | SLt | SLte | SGt | SGte -- 2 operand instructions
+           | SNot | SNeg | SInc | SDec -- 1 operand instructions
+		   | SPushI Int | SPushN String | SPop String | SGet String | SPut String -- Data manipulation instructions
+		   | SLabel String | SJump | SCall | SRet -- Compiler directives
   deriving (Eq,Show)
