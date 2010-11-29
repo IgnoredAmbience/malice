@@ -7,6 +7,8 @@ import Output
 import System (getArgs)
 import Data.Maybe (fromMaybe)
 import System.Console.GetOpt -- http://leiffrenzel.de/papers/commandline-options-in-haskell.html 
+import Control.Monad (liftM)
+import Control.Applicative ((<$>),(<*>))
 
 main :: IO()
 main = do
@@ -54,14 +56,6 @@ processFlags fs = undefined
   where
     (compileStage, inFrom, outTo) = foldr processFlagStep (Compile, "", "") fs
 
-    compileAction = case compileStage of
-                      Lexer     -> input >>= putStrLn . show . alexScanTokens 
-                      Parser    -> input >>= putStrLn . show . parse . alexScanTokens
-                      Semantics -> undefined
-                      Assembly  -> undefined
-                      Compile   -> undefined
-
-
     input = case inFrom of
               "" -> getContents
               xs -> readFile xs
@@ -69,6 +63,16 @@ processFlags fs = undefined
     out = case outTo of
             "" -> putStrLn
             xs -> writeFile xs
+
+    symTab  = fmap fst $ semantics <$> program
+    program = parse . alexScanTokens <$> input
+
+    compileAction = case compileStage of
+                      Lexer     -> input >>= putStrLn . show . alexScanTokens 
+                      Parser    -> input >>= putStrLn . show . parse . alexScanTokens
+                      Semantics -> input >>= putStrLn . show . fst . semantics . parse . alexScanTokens
+                      Assembly  -> input >>= putStrLn . unlines . output symTab . translate . parse . alexScanTokens
+                      Compile   -> undefined
 
     processFlagStep :: Flag -> (OutputStage, String, String) -> (OutputStage, String, String) 
     processFlagStep f (s, i, o) = case f of
