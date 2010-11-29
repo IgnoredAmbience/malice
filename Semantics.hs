@@ -2,42 +2,160 @@ module Semantics where
 import Types
 import qualified Data.Map as Map
 
-semantics :: Program -> (SymbolTbl, Type)
-semantics (Program stmts exp)
-  = (st, semanticExp st exp)
+-- Some of these repeated definitions could be probably cleaned up a bit
+
+semantics :: Program -> [SymbolTbl]
+semantics funcs
+  = map (buildFunctionSymbolTbl funcTbl) funcs
     where
-      st = foldl semanticSt Map.empty stmts
+      funcTbl = foldl addFunction Map.empty funcs
 
--- Build up symbol table from statements, performing checks on any expressions as required
-semanticSt :: SymbolTbl -> Statement -> SymbolTbl 
-semanticSt st (Declare x t)
-  | Map.member x st = error $ "Semantic error - " ++ show x ++ " is already defined"
-  | otherwise       = Map.insert x t st
+-- Add function definitions into (global) symbol table
+addFunction :: SymbolTbl -> Function -> SymbolTbl
+addFunction st (Function name typ ps _)
+  -- Will attempt insertion, calling alreadyDefinedError if a conflict arises
+  = Map.insertWithKey alreadyDefinedError name (FunctionType typ paramTypes) st
+    where
+      paramTypes = map snd ps
 
-semanticSt st (Assign var exp) 
-  | Map.notMember var st = error $ "Semantic error - attempt to assign to undeclared variable " ++ show var
-  | expType /= varType =
-      error $ "Semantic error - declared type of " ++ show varType ++ " " ++ show var ++ " does not match inferred type " ++ show expType ++ " of expression"
-  | otherwise = st
+addFunction st (Lambda name typ _)
+  = Map.insertWithKey alreadyDefinedError name (LambdaType typ) st
+
+-- Build symbol table for a function
+buildFunctionSymbolTbl :: SymbolTbl -> Function -> SymbolTbl
+buildFunctionSymbolTbl funcSt (Function _ _ params stmts)
+  = foldl addStatement st stmts
+    where
+      st = Map.unionWithKey alreadyDefinedError funcSt (Map.fromList params) 
+buildFunctionSymbolTbl funcSt (Lambda _ typ stmts)
+  = foldl addStatement st stmts
+    where
+      st = Map.unionWithKey alreadyDefinedError funcSt (Map.singleton "it" typ) 
+
+-- Build symbol table from a list of statements
+stmtsSmbTbl :: SymbolTbl -> [Statement] -> SymbolTbl
+stmtsSmbTbl = foldl addStatement
+
+-- Check statement against symbol table, building it as required
+addStatement :: SymbolTbl -> Statement -> SymbolTbl 
+addStatement st (Declare x t)
+  = Map.insertWithKey alreadyDefinedError x t st
+
+addStatement st (DeclareArr name typ size)
+  = Map.insertWithKey alreadyDefinedError name (Array typ) st
+
+addStatement st (Assign var exp) 
+  | castable vt et = st
+  | otherwise      = semError $ "cannot assign expression of type " ++ show et ++ " to variable " ++ show var ++ " of type " ++ show vt
   where
-    expType = semanticExp st exp
-    varType = st Map.! var
-semanticSt st _              = st
+    vt = typeOf st var
+    et = expType st exp
 
+addStatement st (Call exp) = checkExp st exp
 
+addStatement st (Increment var)
+  | not(isOperatable(typeOf st var)) = semError $ show var ++ " cannot eat."
+  | otherwise                        = st
 
-semanticExp :: SymbolTbl -> Exp -> Type
-semanticExp _ (Int _)  = Number
-semanticExp _ (Char _) = Letter
-semanticExp st (Var x)
-  | Map.notMember x st = error $ "Semantic error - use of undefined variable  " ++ show x
-  | otherwise          = st Map.! x
+addStatement st (Decrement var)
+  | not(isOperatable(typeOf st var)) = semError $ show var ++ " cannot drink."
+  | otherwise                        = st
 
-semanticExp st (UnOp _ exp)    = semanticExp st exp
+addStatement st (LambdaApply name var)
+  | checkLambda lt vt = semError $ show var ++ " (" ++ show vt ++ ") cannot go through the looking-glass " ++ show name ++ " (" ++ show lt ++ ")."
+  | otherwise= st
+  where
+    LambdaType lt = Map.findWithDefault (undefinedLambError name) name st
+    vt            = typeOf st var
+
+addStatement st (Input var)
+  | not(isOperatable(typeOf st var)) = semError $ show var ++ " cannot be input."
+  | otherwise                        = st
+
+addStatement st (Output exp)
+  | isPrintable $ expType st exp = st
+  | otherwise                    = semError $ show exp ++ " is not printable."
+
+addStatement st (Return exp) = checkExp st exp
+
+-- Fold loops and expressions back into global symbol table... Not exactly as its supposed to be done!
+addStatement st (LoopUntil exp sts) = stmtsSmbTbl st' sts
+  where st' = checkExp st exp
+
+addStatement st (If exp thenSts elseSts) = stmtsSmbTbl st'' elseSts
+  where
+    st'  = checkExp st exp
+    st'' = stmtsSmbTbl st' thenSts
+addStatement st (Comment _) = st
+
+expType :: SymbolTbl -> Exp -> Type
+expType st = fst . semanticExp st
+
+checkExp :: SymbolTbl -> Exp -> SymbolTbl
+checkExp st = snd . semanticExp st
+
+semanticExp :: SymbolTbl -> Exp -> (Type, SymbolTbl)
+semanticExp st (Int _)  = (Number, st)
+semanticExp st (Char _) = (Letter, st)
+semanticExp st (Str _)  = (Sentence, st)
+semanticExp st (Variable v) = (typeOf st v, st)
+
+semanticExp st (UnOp op exp)    
+  | isOperatable t = subExp
+  | otherwise      = typeInoperableError exp t op
+  where subExp@(t, _) = semanticExp st exp
+
 semanticExp st (BinOp op e1 e2)
-  | e1Type /= e2Type = error $ "Semantic error - Type mismatch on " ++ show op ++ " operator, " ++ show e1Type ++ " does not match " ++ show e2Type
-  | otherwise        = e1Type
+  | not(isOperatable e1t) = typeInoperableError e1 e1t op
+  | not(isOperatable e2t) = typeInoperableError e2 e2t op
+  | e1t /= e2t        = castWarning e1t e2t op
+  | otherwise         = (e1t, st)
   where
-    e1Type = semanticExp st e1
-    e2Type = semanticExp st e2
+    e1t = expType st e1
+    e2t = expType st e2
 
+-- TODO: Check params
+semanticExp st (FunctionCall name params)
+  = (t, st)
+  where
+    paramTypes = map (expType st) params
+    FunctionType t expParamTypes = Map.findWithDefault (undefinedFuncError name) name st
+
+-- Axioms
+isPrintable :: Type -> Bool
+isPrintable Number = True
+isPrintable Letter = True
+isPrintable Sentence = True
+isPrintable _ = False
+
+isOperatable :: Type -> Bool
+isOperatable Number = True
+isOperatable Letter = True
+isOperatable _  = False
+
+castable :: Type -> Type -> Bool
+castable Number Letter = True -- castWarning
+castable Letter Number = True
+castable x y
+  | x == y    = True
+  | otherwise = False
+
+checkLambda :: Type -> Type -> Bool
+checkLambda lt (Array vt) = lt /= vt
+checkLambda lt vt         = lt /= vt
+
+typeOf :: SymbolTbl -> Variable -> Type
+typeOf st (Var x)      = Map.findWithDefault (undefinedError x) x st
+typeOf st (VarArr x _) = t
+  where Array t = Map.findWithDefault (undefinedError x) x st
+
+-- Error messages
+semError = error . (++) "Semantic error: " 
+alreadyDefinedError k old new = semError $ "cannot redefine " ++ show k ++ " as a " ++ show new ++ ", already defined as a " ++ show old ++ "."
+undefinedError x = semError $ "use of undefined variable " ++ show x
+undefinedFuncError x = semError $ "use of undefined room " ++ show x
+typeInoperableError exp t op = semError $ "subexpression of type " ++ show t ++ " not compatible with " ++ show op ++ ". (Subexpression was: " ++ show exp ++ ")"
+undefinedLambError x = semError $ "use of undefined looking-glass " ++ show x
+
+--semWarning = "Semantic warning: "
+castWarning t t2 op = semError $ show t ++ " and " ++ show t2 ++ " not directly compatible over " ++ show op ++ " one will be recast."
