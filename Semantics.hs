@@ -56,8 +56,12 @@ addStatement st (Assign var exp)
     varType = st Map.! (name var)
 
 addStatement st (Call exp) = checkExp st exp
-addStatement st (Increment var) = undefined
-addStatement st (Decrement var) = undefined
+addStatement st (Increment var)
+  | not(isOperatable(typeOf var st)) = semError $ show var ++ " cannot eat."
+  | otherwise                        = st
+addStatement st (Decrement var)
+  | not(isOperatable(typeOf var st)) = semError $ show var ++ " cannot drink."
+  | otherwise                        = st
 addStatement st (LambdaApply name var) = undefined
 addStatement st (Input var) = undefined
 addStatement st (Output exp)
@@ -67,12 +71,6 @@ addStatement st (Return exp) = undefined
 addStatement st (LoopUntil exp sts) = undefined
 addStatement st (If exp thenSts elseSts) = undefined
 addStatement st (Comment _) = st
-
-isPrintable :: Type -> Bool
-isPrintable Number = True
-isPrintable Letter = True
-isPrintable Sentence = True
-isPrintable _ = False
 
 expType :: SymbolTbl -> Exp -> Type
 expType st = fst . semanticExp st
@@ -84,20 +82,52 @@ semanticExp :: SymbolTbl -> Exp -> (Type, SymbolTbl)
 semanticExp st (Int _)  = (Number, st)
 semanticExp st (Char _) = (Letter, st)
 semanticExp st (Str _)  = (Sentence, st)
-semanticExp st (Variable (Var x)) = (Map.findWithDefault (undefinedError x) x st, st)
-semanticExp st (Variable (VarArr x _)) = (t, st)
-  where Array t = Map.findWithDefault (undefinedError x) x st
+semanticExp st (Variable v) = (typeOf v st, st)
 
-semanticExp st (UnOp _ exp)    = semanticExp st exp
+semanticExp st (UnOp op exp)    
+  | isOperatable t = subExp
+  | otherwise      = typeInoperableError exp t op
+  where subExp@(t, _) = semanticExp st exp
+
 semanticExp st (BinOp op e1 e2)
-  | e1Type /= e2Type = error $ "Semantic error - Type mismatch on " ++ show op ++ " operator, " ++ show e1Type ++ " does not match " ++ show e2Type
-  | otherwise        = (e1Type, st)
+  | not(isOperatable e1t) = typeInoperableError e1 e1t op
+  | not(isOperatable e2t) = typeInoperableError e2 e2t op
+  | e1t /= e2t        = castWarning e1t e2t op
+  | otherwise         = (e1t, st)
   where
-    e1Type = expType st e1
-    e2Type = expType st e2
+    e1t = expType st e1
+    e2t = expType st e2
+
+-- TODO: Check params
+semanticExp st (FunctionCall name params)
+  = (t, st)
+  where
+    paramTypes = map (expType st) params
+    FunctionType t expParamTypes = Map.findWithDefault (undefinedFuncError name) name st
+
+-- Axioms
+isPrintable :: Type -> Bool
+isPrintable Number = True
+isPrintable Letter = True
+isPrintable Sentence = True
+isPrintable _ = False
+
+isOperatable :: Type -> Bool
+isOperatable Number = True
+isOperatable Letter = True
+isOperatable _  = False
+
+typeOf :: Variable -> SymbolTbl -> Type
+typeOf (Var x) st      = Map.findWithDefault (undefinedError x) x st
+typeOf (VarArr x _) st = t
+  where Array t = Map.findWithDefault (undefinedError x) x st
 
 -- Error messages
 semError = error . (++) "Semantic error: " 
 alreadyDefinedError k old new = semError $ "cannot redefine " ++ show k ++ " as a " ++ show new ++ ", already defined as a " ++ show old ++ "."
 undefinedError x = semError $ "use of undefined variable " ++ show x
+undefinedFuncError x = semError $ "use of undefined function " ++ show x
+typeInoperableError exp t op = semError $ "subexpression of type " ++ show t ++ " not compatible with " ++ show op ++ ". (Subexpression was: " ++ show exp ++ ")"
 
+--semWarning = "Semantic warning: "
+castWarning t t2 op = semError $ show t ++ " and " ++ show t2 ++ " not directly compatible over " ++ show op ++ " one will be recast."
