@@ -2,8 +2,8 @@ module Output where
 import Types
 import Data.Map (mapWithKey, elems)
 
-output :: SymbolTbl -> [SInst] -> [String]
-output st insts = outputSymbolTable st ++ outputASM insts
+output :: SymbolTbl -> [SFn] -> [[String]]
+output st fns = outputSymbolTable st ++ map outputASM fns
 
 outputASM :: [SInst] -> [String]
 outputASM insts = ["section .text"] ++ ["global _start"] ++ ["_start:"] ++ concatMap toASM insts ++ ["pop ebx"] ++ ["mov eax,1"] ++ ["int 0x80"]
@@ -40,6 +40,10 @@ toASM (SGet n) = ["pop eax"] ++ ["dec eax"] ++ ["mov ebx,"++n] ++ ["mov eax,[ebx
 toASM (SPut n) = ["pop eax"] ++ ["dec eax"] ++ ["mov ebx,"++n] ++ ["pop ecx"] ++ ["mov [ebx + 4*eax],ecx"]
 
 toASM (SLabel label) = [label++":"]
+toASM (SJump label)  = ["jmp "++label]
+toASM (SJTrue label) = ["pop eax"] ++ ["cmp eax,0"] ++ ["jne "++label]
+toASM (SCall label)  = ["call "++label]
+toASM (SRet)         = ["ret"]
 
 outputSymbolTable :: SymbolTbl -> [String]
 outputSymbolTable st = "section .bss" : elems (mapWithKey symbolToDef st)
