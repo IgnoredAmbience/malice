@@ -78,7 +78,7 @@ addStatement st (Output exp)
 
 addStatement st (Return exp) = checkExp st exp
 
--- Fold loops and expressions back into global symbol table... Not exactly as its supposed to be done!
+-- Fold loops and expressions back into global symbol table... Not exactly as it's supposed to be done!
 addStatement st (LoopUntil exp sts) = stmtsSmbTbl st' sts
   where st' = checkExp st exp
 
@@ -136,9 +136,7 @@ isOperatable _  = False
 castable :: Type -> Type -> Bool
 castable Number Letter = True -- castWarning
 castable Letter Number = True
-castable x y
-  | x == y    = True
-  | otherwise = False
+castable x y = x == y
 
 checkLambda :: Type -> Type -> Bool
 checkLambda lt (Array vt) = lt /= vt
