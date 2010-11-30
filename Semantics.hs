@@ -28,7 +28,8 @@ buildFunctionSymbolTbl funcSt (Function _ _ params stmts)
 buildFunctionSymbolTbl funcSt (Lambda _ typ stmts)
   = foldl addStatement st stmts
     where
-      st = Map.unionWithKey alreadyDefinedError funcSt (Map.singleton "it" typ) 
+      st = Map.unionWithKey alreadyDefinedError funcSt (Map.singleton "it" typ') 
+      typ' = lambdaType stmts typ
 
 -- Build symbol table from a list of statements
 stmtsSmbTbl :: SymbolTbl -> [Statement] -> SymbolTbl
@@ -142,6 +143,24 @@ castable x y
 checkLambda :: Type -> Type -> Bool
 checkLambda lt (Array vt) = lt /= vt
 checkLambda lt vt         = lt /= vt
+
+lambdaType :: [Statement] -> Type -> Type
+lambdaType s t
+  | lambdaIsArray s = Array t
+  | otherwise       = t
+
+lambdaIsArray :: [Statement] -> Bool
+lambdaIsArray = any lambdaIsArray'
+
+lambdaIsArray' :: Statement -> Bool
+lambdaIsArray' (Assign (VarArr "it" _) _) = True
+lambdaIsArray' (Increment (VarArr "it" _)) = True
+lambdaIsArray' (Decrement (VarArr "it" _)) = True
+lambdaIsArray' (LambdaApply _ (VarArr "it" _)) = True
+lambdaIsArray' (Input (VarArr "it" _)) = True
+lambdaIsArray' (LoopUntil _ s) = lambdaIsArray s
+lambdaIsArray' (If _ s1 s2) = lambdaIsArray s1 || lambdaIsArray s2
+lambdaIsArray' _ = False
 
 typeOf :: SymbolTbl -> Variable -> Type
 typeOf st (Var x)      = Map.findWithDefault (undefinedError x) x st
