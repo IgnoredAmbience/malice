@@ -1,6 +1,17 @@
 module Translator where
 import Types
 
+import Data.IORef
+import System.IO.Unsafe
+
+-- Please don't kill me...
+l = unsafePerformIO $ newIORef 1
+
+labelGet = do
+	ll <- readIORef l
+	writeIORef l $ ll + 1
+	return ll
+
 -- Translates statements/expressions/etc into a list of abstract Instructions
 translate :: Program -> [SFn]
 translate (Program functions) = map transFunc functions
@@ -36,9 +47,11 @@ transStat (Input (VarArr name))            =
 
 transStat (Output exp)                     =
 
-transStat (LoopUntil cond body)            = [SLabel ] ++ (concatMap transStat body) ++ (transExp cond) ++ [SJTrue ] -- TODO
+transStat (LoopUntil cond body)            = [SLabel lbl] ++ (concatMap transStat body) ++ (transExp cond) ++ [SJTrue lbl]
+	where lbl = "L"++(show labelGet)
 
-transStat (If cond true false)             = (transExp cond) ++ [SJTrue "_true"] ++ [SJump "_false"] ++ [SLabel "_true"] ++ (concatMap transStat true) ++ [SJump "_end"] ++ [SLabel "_false"] ++ (concatMap transStat false) ++ [SLabel "_end"] -- TODO
+transStat (If cond true false)             = (transExp cond) ++ [SJTrue lbl++"_true"] ++ [SJump lbl++"_false"] ++ [SLabel lbl++"_true"] ++ (concatMap transStat true) ++ [SJump lbl++"_end"] ++ [SLabel lbl++"_false"] ++ (concatMap transStat false) ++ [SLabel lbl++"_end"]
+	where lbl = "L"++(show labelGet)
 
 transStat (Comment _)                      = []
 
