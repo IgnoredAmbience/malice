@@ -2,8 +2,6 @@ module Semantics where
 import Types
 import qualified Data.Map as Map
 
--- Some of these repeated definitions could be probably cleaned up a bit
-
 semantics :: Program -> [SymbolTbl]
 semantics funcs
   = map (buildFunctionSymbolTbl funcTbl) funcs
@@ -114,12 +112,13 @@ semanticExp st (BinOp op e1 e2)
     e1t = expType st e1
     e2t = expType st e2
 
--- TODO: Check params
 semanticExp st (FunctionCall name params)
-  = (t, st)
+  | and comparedTypes = (t, st)
+  | otherwise         = funcParamMismatch name expParamTypes paramTypes
   where
     paramTypes = map (expType st) params
     FunctionType t expParamTypes = Map.findWithDefault (undefinedFuncError name) name st
+    comparedTypes = zipWith castable paramTypes expParamTypes
 
 -- Axioms
 isPrintable :: Type -> Bool
@@ -154,6 +153,7 @@ semError = error . (++) "Semantic error: "
 alreadyDefinedError k old new = semError $ "cannot redefine " ++ show k ++ " as a " ++ show new ++ ", already defined as a " ++ show old ++ "."
 undefinedError x = semError $ "use of undefined variable " ++ show x
 undefinedFuncError x = semError $ "use of undefined room " ++ show x
+funcParamMismatch r x y = semError $ "mismatch of types of parameters passed into the room " ++ show r ++ ", expected " ++ show x ++ " but got " ++ show y ++ "."
 typeInoperableError exp t op = semError $ "subexpression of type " ++ show t ++ " not compatible with " ++ show op ++ ". (Subexpression was: " ++ show exp ++ ")"
 undefinedLambError x = semError $ "use of undefined looking-glass " ++ show x
 
