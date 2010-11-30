@@ -5,26 +5,30 @@ import Data.IORef
 import System.IO.Unsafe
 
 -- Please don't kill me...
+l :: IORef Int
 l = unsafePerformIO $ newIORef 1
 
-labelGet = do
-	ll <- readIORef l
-	writeIORef l $ ll + 1
-	return ll
+labelInc :: IO ()
+labelInc = do
+	modifyIORef l succ
+
+labelGet :: Int
+labelGet = unsafePerformIO $ labelInc >> readIORef l
 
 -- Translates statements/expressions/etc into a list of abstract Instructions
 translate :: Program -> [SFn]
-translate (Program functions) = map transFunc functions
+translate functions = map transFunc functions
 
 transFunc :: Function -> [SInst]
 transFunc (Function name t args stats) =
 	[SLabel name] ++ (popArgs args) ++ (concatMap transStat stats)
 	where
+		popArgs :: [(String,Type)] -> [SInst]
 		popArgs []                  = []
 		popArgs ((name,Number):as)  = (popArgs as) ++ [SPushN name]
 		--popArgs ((name,Array _):as) = (popArgs as) ++ -- TODO: check pointer passing
 
-transStat :: (Statement,Int) -> ([SInst],Int)
+transStat :: Statement -> [SInst]
 transStat (Declare _ _)                    = []
 
 transStat (Assign (Var name) exp)          = (transExp exp) ++ [SPop name]
@@ -40,22 +44,27 @@ transStat (Call _)                         = []
 
 transStat (Return exp)                     = (transExp exp) ++ [SRet]
 
-transStat (LambdaApply label arg)          = (transExp arg) ++ [SCall]
+transStat (LambdaApply label (Var name))   = [SPushN name] ++ [SCall label]
+transStat (LambdaApply label (VarArr n e)) = (transExp e) ++ [SGet n] ++ [SCall label]
 
+{-
 transStat (Input (Var name))               =
 transStat (Input (VarArr name))            =
 
 transStat (Output exp)                     =
+-}
 
 transStat (LoopUntil cond body)            = [SLabel lbl] ++ (concatMap transStat body) ++ (transExp cond) ++ [SJTrue lbl]
 	where lbl = "L"++(show labelGet)
 
-transStat (If cond true false)             = (transExp cond) ++ [SJTrue lbl++"_true"] ++ [SJump lbl++"_false"] ++ [SLabel lbl++"_true"] ++ (concatMap transStat true) ++ [SJump lbl++"_end"] ++ [SLabel lbl++"_false"] ++ (concatMap transStat false) ++ [SLabel lbl++"_end"]
+transStat (If cond true false)             = (transExp cond) ++ [SJTrue (lbl++"_true")] ++ [SJump (lbl++"_false")] ++ [SLabel (lbl++"_true")] ++ (concatMap transStat true) ++ [SJump (lbl++"_end")] ++ [SLabel (lbl++"_false")] ++ (concatMap transStat false) ++ [SLabel (lbl++"_end")]
 	where lbl = "L"++(show labelGet)
 
 transStat (Comment _)                      = []
 
 transExp :: Exp -> [SInst]
+transExp _ = []
+{-
 transExp (Int i) = [SPushI i]
 transExp (Var name) = [SPushN name]
 transExp (UnOp op exp) = (transExp exp) ++ (transUnOp op)
@@ -75,8 +84,9 @@ transOp Mul  = [SMul]
 transOp Div  = [SDiv]
 transOp Mod  = [SMod]
 transOp LOr  = [SLOr]
-transOp LAnd = [SLand]
+transOp LAnd = [SLAnd]
 transOp Lt   = [SLt]
 transOp Lte  = [SLte]
 transOp Gt   = [SGt]
+-}
 transOp Gte  = [SGte]
