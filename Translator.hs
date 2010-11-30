@@ -7,9 +7,13 @@ translate (Program functions) = map transFunc functions
 
 transFunc :: Function -> [SInst]
 transFunc (Function name t args stats) =
-	[SLabel name] ++ {-pop args to their respective places, see transStat fncall-} ++ (concatMap transStat stats)
+	[SLabel name] ++ (popArgs args) ++ (concatMap transStat stats)
+	where
+		popArgs []                  = []
+		popArgs ((name,Number):as)  = (popArgs as) ++ [SPushN name]
+		--popArgs ((name,Array _):as) = (popArgs as) ++ -- TODO: check pointer passing
 
-transStat :: Statement -> [SInst]
+transStat :: (Statement,Int) -> ([SInst],Int)
 transStat (Declare _ _)                    = []
 
 transStat (Assign (Var name) exp)          = (transExp exp) ++ [SPop name]
@@ -32,9 +36,9 @@ transStat (Input (VarArr name))            =
 
 transStat (Output exp)                     =
 
-transStat (LoopUntil cond body)            = [SLabel ] ++ (concatMap transStat body) ++ (transExp cond) ++ [ -- TODO
+transStat (LoopUntil cond body)            = [SLabel ] ++ (concatMap transStat body) ++ (transExp cond) ++ [SJTrue ] -- TODO
 
-transStat (If cond true false)             =
+transStat (If cond true false)             = (transExp cond) ++ [SJTrue "_true"] ++ [SJump "_false"] ++ [SLabel "_true"] ++ (concatMap transStat true) ++ [SJump "_end"] ++ [SLabel "_false"] ++ (concatMap transStat false) ++ [SLabel "_end"] -- TODO
 
 transStat (Comment _)                      = []
 
