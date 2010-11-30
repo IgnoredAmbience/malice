@@ -4,48 +4,51 @@ import Types
 import Data.IORef
 import System.IO.Unsafe
 
--- Please don't kill me...
-l :: IORef Int
-l = unsafePerformIO $ newIORef 1
-
-labelInc :: IO ()
-labelInc = do
-	modifyIORef l succ
-
-labelGet :: Int
-labelGet = unsafePerformIO $ labelInc >> readIORef l
-
 -- Translates statements/expressions/etc into a list of abstract Instructions
 translate :: Program -> [SFn]
 translate functions = map transFunc functions
 
 transFunc :: Function -> [SInst]
 transFunc (Function name t args stats) =
-	[SLabel name] ++ (popArgs args) ++ (concatMap transStat stats)
+	[SLabel name] ++ (popArgs args) ++ code
 	where
+		(code,_) = transStat (stats,1)
 		popArgs :: [(String,Type)] -> [SInst]
 		popArgs []                  = []
 		popArgs ((name,Number):as)  = (popArgs as) ++ [SPushN name]
 		--popArgs ((name,Array _):as) = (popArgs as) ++ -- TODO: check pointer passing
 
-transStat :: Statement -> [SInst]
-transStat (Declare _ _)                    = []
+transStat :: ([Statement],Int) -> ([SInst],Int)
+transStat (((Declare _ _):ss),l)           = (out,l)
+	where (out,_) = transStat (ss,l)
 
-transStat (Assign (Var name) exp)          = (transExp exp) ++ [SPop name]
-transStat (Assign (VarArr name index) exp) = (transExp exp) ++ (transExp index) ++ [SPop name]
+transStat (((Assign (Var name) exp):ss),l) = ((transExp exp) ++ [SPop name] ++ out,l)
+	where (out,_) = transStat (ss,l)
 
-transStat (Increment (Var name))           = [SPushN name] ++ [SInc] ++ [SPop name]
-transStat (Increment (VarArr name index))  = (transExp index) ++ [SGet name] ++ [SInc] ++ (transExp index) ++ [SPut name]
-transStat (Decrement (Var name))           = [SPushN name] ++ [SDec] ++ [SPop name]
-transStat (Decrement (VarArr name index))  = (transExp index) ++ [SGet name] ++ [SDec] ++ (transExp index) ++ [SPut name]
+transStat (((Assign (VarArr name index) exp):ss),l) = ((transExp exp) ++ (transExp index) ++ [SPop name] ++ out,l)
+	where (out,_) = transStat (ss,l)
 
-transStat (Call (FunctionCall label args)) = (concatMap transExp args) ++ [SCall label]
-transStat (Call _)                         = []
+transStat (((Increment (Var name)):ss),l)   = ([SPushN name] ++ [SInc] ++ [SPop name] ++ out,l)
+	where (out,_) = transStat (ss,l)
+transStat (((Increment (VarArr name index)):ss),l)  = ((transExp index) ++ [SGet name] ++ [SInc] ++ (transExp index) ++ [SPut name] ++ out,l)
+	where (out,_) = transStat (ss,l)
+transStat (((Decrement (Var name)):ss),l)           = ([SPushN name] ++ [SDec] ++ [SPop name] ++ out,l)
+	where (out,_) = transStat (ss,l)
+transStat (((Decrement (VarArr name index)):ss),l)  = ((transExp index) ++ [SGet name] ++ [SDec] ++ (transExp index) ++ [SPut name] ++ out,l)
+	where (out,_) = transStat (ss,l)
 
-transStat (Return exp)                     = (transExp exp) ++ [SRet]
+transStat (((Call (FunctionCall label args)):ss),l) = ((concatMap transExp args) ++ [SCall label] ++ out,l)
+	where (out,_) = transStat (ss,l)
+transStat (((Call _):ss),l)             = (out,l)
+	where (out,_) = transStat (ss,l)
 
-transStat (LambdaApply label (Var name))   = [SPushN name] ++ [SCall label]
-transStat (LambdaApply label (VarArr n e)) = (transExp e) ++ [SGet n] ++ [SCall label]
+transStat (((Return exp):ss),l)             = ((transExp exp) ++ [SRet] ++ out,l)
+	where (out,_) = transStat (ss,l)
+
+transStat (((LambdaApply label (Var name)):ss),l)   = ([SPushN name] ++ [SCall label] ++ out,l)
+	where (out,_) = transStat (ss,l)
+transStat (((LambdaApply label (VarArr n e)):ss),l) = ((transExp e) ++ [SGet n] ++ [SCall label] ++ out,l)
+	where (out,_) = transStat (ss,l)
 
 {-
 transStat (Input (Var name))               =
@@ -54,13 +57,21 @@ transStat (Input (VarArr name))            =
 transStat (Output exp)                     =
 -}
 
-transStat (LoopUntil cond body)            = [SLabel lbl] ++ (concatMap transStat body) ++ (transExp cond) ++ [SJTrue lbl]
-	where lbl = "L"++(show labelGet)
+transStat (((LoopUntil cond body):ss),l)   = ([SLabel lbl] ++ bod ++ (transExp cond) ++ [SJTrue lbl] ++ out,l')
+	where
+		lbl = "L"++(show l)
+		(bod,l') = transStat (body,l+1)
+		(out,_)  = transStat (ss,l')
 
-transStat (If cond true false)             = (transExp cond) ++ [SJTrue (lbl++"_true")] ++ [SJump (lbl++"_false")] ++ [SLabel (lbl++"_true")] ++ (concatMap transStat true) ++ [SJump (lbl++"_end")] ++ [SLabel (lbl++"_false")] ++ (concatMap transStat false) ++ [SLabel (lbl++"_end")]
-	where lbl = "L"++(show labelGet)
+transStat (((If cond true false):ss),l)    = ((transExp cond) ++ [SJTrue (lbl++"_true")] ++ [SJump (lbl++"_false")] ++ [SLabel (lbl++"_true")] ++ bodT ++ [SJump (lbl++"_end")] ++ [SLabel (lbl++"_false")] ++ bodF ++ [SLabel (lbl++"_end")] ++ out,l'')
+	where
+		lbl = "L"++(show l)
+		(bodT,l')  = transStat (true,l+1)
+		(bodF,l'') = transStat (false,l'+1)
+		(out,_)    = transStat (ss,l'')
 
-transStat (Comment _)                      = []
+transStat (((Comment _):ss),l) = (out,l)
+	where (out,_) = transStat (ss,l)
 
 transExp :: Exp -> [SInst]
 transExp _ = []
