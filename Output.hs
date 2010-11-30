@@ -2,8 +2,8 @@ module Output where
 import Types
 import Data.Map (mapWithKey, elems)
 
-output :: SymbolTbl -> [SFn] -> [[String]]
-output st fns = outputSymbolTable st ++ map outputASM fns
+output :: [SymbolTbl] -> [SFn] -> [[String]]
+output st fns = map outputSymbolTable st ++ map outputASM fns
 
 outputASM :: [SInst] -> [String]
 outputASM insts = ["section .text"] ++ ["global _start"] ++ ["_start:"] ++ concatMap toASM insts ++ ["pop ebx"] ++ ["mov eax,1"] ++ ["int 0x80"]
