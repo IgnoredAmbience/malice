@@ -107,8 +107,8 @@ type SymbolTbl = Map String Type
 
 type SFn = [SInst]
 
-data SInst = SOr | SXor | SAnd | SAdd | SSub | SMul | SDiv | SMod | SLor | SLAnd | SEq | SNeq | SLt | SLte | SGt | SGte -- 2 operand instructions
+data SInst = SOr | SXor | SAnd | SAdd | SSub | SMul | SDiv | SMod | SLOr | SLAnd | SEq | SNeq | SLt | SLte | SGt | SGte -- 2 operand instructions
            | SNot | SNeg | SInc | SDec -- 1 operand instructions
 		   | SPushI Int | SPushN String | SPop String | SGet String | SPut String -- Data manipulation instructions
-		   | SLabel String | SJump | SCall | SRet -- Compiler directives
+		   | SLabel String | SJump String | SJTrue String | SCall String | SRet -- Compiler directives
   deriving (Eq,Show)
