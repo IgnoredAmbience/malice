@@ -50,12 +50,11 @@ transStat (((LambdaApply label (Var name)):ss),l)   = ([SPushN name] ++ [SCall l
 transStat (((LambdaApply label (VarArr n e)):ss),l) = ((transExp e) ++ [SGet n] ++ [SCall label] ++ out,l)
 	where (out,_) = transStat (ss,l)
 
-{-
-transStat (Input (Var name))               =
-transStat (Input (VarArr name))            =
+transStat (Input (Var name))               = undefined
+transStat (Input (VarArr name))            = undefined
 
-transStat (Output exp)                     =
--}
+transStat (Output exp)                     = undefined
+
 
 transStat (((LoopUntil cond body):ss),l)   = ([SLabel lbl] ++ bod ++ (transExp cond) ++ [SJTrue lbl] ++ out,l')
 	where
