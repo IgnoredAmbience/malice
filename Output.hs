@@ -4,10 +4,13 @@ import Data.Map (mapWithKey, elems)
 
 -- TODO: Check this - can zip?
 output :: [SymbolTbl] -> [SFn] -> [[String]]
-output st fns = map outputSymbolTable st ++ map outputASM fns
+output st fns = [x++y | (x,y) <- zip (map outputSymbolTable st) (map outputASM fns)]
 
 outputASM :: [SInst] -> [String]
-outputASM insts = ["section .text"] ++ ["global _start"] ++ ["_start:"] ++ concatMap toASM insts ++ ["pop ebx"] ++ ["mov eax,1"] ++ ["int 0x80"]
+-- Check that main is called main, and how it's parsed (does it still need "_start:" declared specifically)
+outputASM ((SLabel "main"):insts) = ["section .text"] ++ ["global _start"] ++ concatMap toASM insts ++ ["pop ebx"] ++ ["mov eax,1"] ++ ["int 0x80"]
+outputASM insts = ["section .text"] ++ ["global "++fname] ++ concatMap toASM insts
+	where (SLabel fname) = head insts
 
 toASM :: SInst -> [String]
 toASM SOr  = ["pop eax"] ++ ["or [esp],eax"]
@@ -18,16 +21,17 @@ toASM SSub = ["pop eax"] ++ ["sub [esp],eax"]
 toASM SMul = ["pop eax"] ++ ["imul eax,[esp]"] ++ ["mov [esp],eax"]
 toASM SDiv = ["pop ebx"] ++ ["pop eax"] ++ ["xor edx,edx"] ++ ["idiv ebx"] ++ ["push eax"]
 toASM SMod = ["pop ebx"] ++ ["pop eax"] ++ ["xor edx,edx"] ++ ["idiv ebx"] ++ ["push edx"]
-{-
-toASM SLor
-toASM SLAnd
-toASM SEq
-toASM SNeq
-toASM SLt
-toASM SLte
-toASM SGt
-toASM SGte
--}
+
+-- TODO
+-- IDEAS: Make labels by hashing a seed (eg, unix time at that point of compilation) with a salt, to help ensure the labels can't overlap
+toASM SLOr = ["pop eax"] ++ ["pop ebx"] -- EAX || EBX
+toASM SLAnd = ["pop eax"] ++ ["pop ebx"] -- EAX && EBX
+toASM SEq = ["pop eax"] ++ ["pop ebx"] -- EAX == EBX
+toASM SNeq = ["pop eax"] ++ ["pop ebx"] -- EAX != EBX
+toASM SLt = ["pop eax"] ++ ["pop ebx"] -- EAX < EBX
+toASM SLte = ["pop eax"] ++ ["pop ebx"] -- EAX <= EBX
+toASM SGt = ["pop eax"] ++ ["pop ebx"] -- EAX > EBX
+toASM SGte = ["pop eax"] ++ ["pop ebx"] -- EAX >= EBX
 
 toASM SNot = ["not dword [esp]"]
 toASM SNeg = ["neg dword [esp]"]
