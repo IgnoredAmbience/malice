@@ -41,6 +41,7 @@ toASM SDec = ["dec dword [esp]"]
 toASM (SPushI i) = ["mov eax," ++ (show i)] ++ ["push eax"]
 toASM (SPushN n) = ["mov eax,[" ++ n ++ "]"] ++ ["push eax"]
 toASM (SPop n) = ["pop eax"] ++ ["mov [" ++ n ++ "],eax"]
+-- TODO: Change these to index from 1 with bounds checking. Also, figure out how/when to get the bound into the array first...
 toASM (SGet n) = ["pop eax"] ++ ["dec eax"] ++ ["mov ebx,"++n] ++ ["mov eax,[ebx + 4*eax]"] ++ ["push eax"]
 toASM (SPut n) = ["pop eax"] ++ ["dec eax"] ++ ["mov ebx,"++n] ++ ["pop ecx"] ++ ["mov [ebx + 4*eax],ecx"]
 
