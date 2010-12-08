@@ -24,14 +24,14 @@ toASM SMod = ["pop ebx"] ++ ["pop eax"] ++ ["xor edx,edx"] ++ ["idiv ebx"] ++ ["
 
 -- TODO
 -- IDEAS: Make labels by hashing a seed (eg, unix time at that point of compilation) with a salt, to help ensure the labels can't overlap
-toASM SLOr = ["pop eax"] ++ ["pop ebx"] -- EAX || EBX
+toASM SLOr = ["pop eax"] ++ ["pop ebx"] ++ ["cmp eax,ebx"] -- EAX || EBX
 toASM SLAnd = ["pop eax"] ++ ["pop ebx"] -- EAX && EBX
-toASM SEq = ["pop eax"] ++ ["pop ebx"] -- EAX == EBX
-toASM SNeq = ["pop eax"] ++ ["pop ebx"] -- EAX != EBX
-toASM SLt = ["pop eax"] ++ ["pop ebx"] -- EAX < EBX
-toASM SLte = ["pop eax"] ++ ["pop ebx"] -- EAX <= EBX
-toASM SGt = ["pop eax"] ++ ["pop ebx"] -- EAX > EBX
-toASM SGte = ["pop eax"] ++ ["pop ebx"] -- EAX >= EBX
+toASM SEq = ["pop eax"] ++ ["pop ebx"] ++ ["cmp eax,ebx"] ++ ["je "{-LABEL-}] ++ ["mov eax,0"] ++ ["push eax"] ++ [{-LABEL-}] ++ ["mov eax,1"] ++ ["push eax"] -- EAX == EBX
+toASM SNeq = ["pop eax"] ++ ["pop ebx"] ++ ["cmp eax,ebx"] ++ ["jne "{-LABEL-}] ++ ["mov eax,0"] ++ ["push eax"] ++ [{-LABEL-}] ++ ["mov eax,1"] ++ ["push eax"] -- EAX != EBX
+toASM SLt = ["pop eax"] ++ ["pop ebx"] ++ ["cmp eax,ebx"] ++ ["jl "{-LABEL-}] ++ ["mov eax,0"] ++ ["push eax"] ++ [{-LABEL-}] ++ ["mov eax,1"] ++ ["push eax"] -- EAX < EBX
+toASM SLte = ["pop eax"] ++ ["pop ebx"] ++ ["cmp eax,ebx"] ++ ["jle "{-LABEL-}] ++ ["mov eax,0"] ++ ["push eax"] ++ [{-LABEL-}] ++ ["mov eax,1"] ++ ["push eax"] -- EAX <= EBX
+toASM SGt = ["pop eax"] ++ ["pop ebx"] ++ ["cmp eax,ebx"] ++ ["jg "{-LABEL-}] ++ ["mov eax,0"] ++ ["push eax"] ++ [{-LABEL-}] ++ ["mov eax,1"] ++ ["push eax"] -- EAX > EBX
+toASM SGte = ["pop eax"] ++ ["pop ebx"] ++ ["cmp eax,ebx"] ++ ["jge "{-LABEL-}] ++ ["mov eax,0"] ++ ["push eax"] ++ [{-LABEL-}] ++ ["mov eax,1"] ++ ["push eax"] -- EAX >= EBX
 
 toASM SNot = ["not dword [esp]"]
 toASM SNeg = ["neg dword [esp]"]
