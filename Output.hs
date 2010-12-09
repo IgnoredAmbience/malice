@@ -38,6 +38,8 @@ toASM SNeg = ["neg dword [esp]"]
 toASM SInc = ["inc dword [esp]"]
 toASM SDec = ["dec dword [esp]"]
 
+toASM SPrintI = ["pop eax"]
+
 toASM (SPushI i) = ["mov eax," ++ (show i)] ++ ["push eax"]
 toASM (SPushN n) = ["mov eax,[" ++ n ++ "]"] ++ ["push eax"]
 toASM (SPop n) = ["pop eax"] ++ ["mov [" ++ n ++ "],eax"]

@@ -53,9 +53,12 @@ transStat (((LambdaApply label (VarArr n e)):ss),l) = ((transExp e) ++ [SGet n] 
 {-
 transStat (Input (Var name))               =
 transStat (Input (VarArr name))            =
-
-transStat (Output exp)                     =
 -}
+
+-- TODO:
+transStat (((Output (Str s)):ss),l) = [SPrintS s]
+	where name = 
+transStat (((Output exp):ss),l)     = (transExp exp) ++ [SPrintI]
 
 transStat (((LoopUntil cond body):ss),l)   = ([SLabel lbl] ++ bod ++ (transExp cond) ++ [SJTrue lbl] ++ out,l')
 	where
