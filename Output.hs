@@ -2,7 +2,6 @@ module Output where
 import Types
 import Data.Map (mapWithKey, elems)
 
--- TODO: Check this - can zip?
 output :: [SymbolTbl] -> [SFn] -> [[String]]
 output st fns = [x++y | (x,y) <- zip (map outputSymbolTable st) (map outputASM fns)]
 

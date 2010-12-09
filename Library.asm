@@ -1,3 +1,10 @@
+section .text
+
+global input_int
+global output_str
+global output_int
+
+
 WRITE  equ 4
 STDOUT equ 1
 STDIN  equ 2
