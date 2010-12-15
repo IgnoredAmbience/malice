@@ -46,7 +46,7 @@ input = Input . fromMaybe ""
 
 
 compile :: String -> IO ()
-compile source =  putStrLn . unlines . output symbolTables . translate  $ program
+compile source =  putStrLn . unlines . concat . output symbolTables . translate  $ program
   where
     (program, symbolTables) = semantics . parse $ alexScanTokens source
 
@@ -79,3 +79,4 @@ processFlags fs = undefined
                                     OutputMade s' -> (min s s', i, o)
                                     Input inFile   -> (s, inFile, o)
                                     Output outFile -> (s, i, outFile)
+

@@ -5,8 +5,8 @@ import Data.IORef
 import System.IO.Unsafe
 
 -- Translates statements/expressions/etc into a list of abstract Instructions
-translate :: Program -> [SInst]
-translate functions = concatMap transFunc functions
+translate :: Program -> [SFn]
+translate functions = map transFunc functions
 
 transFunc :: Function -> [SInst]
 transFunc (Function name t args stats) =
@@ -25,7 +25,7 @@ transStat (((Declare _ _):ss),l)           = (out,l)
 transStat (((Assign (Var name) exp):ss),l) = ((transExp exp) ++ [SPop name] ++ out,l)
 	where (out,_) = transStat (ss,l)
 
-transStat (((Assign (VarArr name index) exp):ss),l) = ((transExp exp) ++ (transExp index) ++ [SPop name] ++ out,l)
+transStat (((Assign (VarArr name index) exp):ss),l) = ((transExp exp) ++ (transExp index) ++ [SPut name] ++ out,l)
 	where (out,_) = transStat (ss,l)
 
 transStat (((Increment (Var name)):ss),l)   = ([SPushN name] ++ [SInc] ++ [SPop name] ++ out,l)
@@ -50,11 +50,15 @@ transStat (((LambdaApply label (Var name)):ss),l)   = ([SPushN name] ++ [SCall l
 transStat (((LambdaApply label (VarArr n e)):ss),l) = ((transExp e) ++ [SGet n] ++ [SCall label] ++ out,l)
 	where (out,_) = transStat (ss,l)
 
--- transStat (Input (Var name))               = undefined
--- transStat (Input (VarArr name))            = undefined
+{-
+transStat (Input (Var name))               =
+transStat (Input (VarArr name))            =
+-}
 
--- transStat (Output exp)                     = undefined
-
+-- TODO:
+--transStat (((Output (Str s)):ss),l) = [SPrintS s]
+--	where name = 
+--transStat (((Output exp):ss),l)     = (transExp exp) ++ [SPrintI]
 
 transStat (((LoopUntil cond body):ss),l)   = ([SLabel lbl] ++ bod ++ (transExp cond) ++ [SJTrue lbl] ++ out,l')
 	where
@@ -73,12 +77,13 @@ transStat (((Comment _):ss),l) = (out,l)
 	where (out,_) = transStat (ss,l)
 
 transExp :: Exp -> [SInst]
-transExp _ = []
-{-
 transExp (Int i) = [SPushI i]
-transExp (Var name) = [SPushN name]
+transExp (Variable (Var name)) = [SPushN name]
+transExp (Variable (VarArr name index)) = (transExp index) ++ [SGet name]
+transExp (FunctionCall fn args) = (concatMap transExp args) ++ [SCall fn]
 transExp (UnOp op exp) = (transExp exp) ++ (transUnOp op)
 transExp (BinOp op exp1 exp2) = (transExp exp1) ++ (transExp exp2) ++ (transOp op)
+transExp _ = []
 
 transUnOp :: UnOp -> [SInst]
 transUnOp Not = [SNot]
@@ -98,5 +103,4 @@ transOp LAnd = [SLAnd]
 transOp Lt   = [SLt]
 transOp Lte  = [SLte]
 transOp Gt   = [SGt]
--}
 transOp Gte  = [SGte]

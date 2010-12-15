@@ -118,4 +118,11 @@ data SInst = SOr | SXor | SAnd | SAdd | SSub | SMul | SDiv | SMod | SLOr | SLAnd
            | SNot | SNeg | SInc | SDec -- 1 operand instructions
 		   | SPushI Int | SPushN String | SPop String | SGet String | SPut String -- Data manipulation instructions
 		   | SLabel String | SJump String | SJTrue String | SCall String | SRet -- Compiler directives
+		   | SPrintI | SPrintS String -- Print
   deriving (Eq,Show)
+
+{-
+type RFn = [RInst]
+
+data RInst = 
+-}
