@@ -56,9 +56,9 @@ transStat (Input (VarArr name))            =
 -}
 
 -- TODO:
-transStat (((Output (Str s)):ss),l) = [SPrintS s]
-	where name = 
-transStat (((Output exp):ss),l)     = (transExp exp) ++ [SPrintI]
+--transStat (((Output (Str s)):ss),l) = [SPrintS s]
+--	where name = 
+--transStat (((Output exp):ss),l)     = (transExp exp) ++ [SPrintI]
 
 transStat (((LoopUntil cond body):ss),l)   = ([SLabel lbl] ++ bod ++ (transExp cond) ++ [SJTrue lbl] ++ out,l')
 	where
