@@ -46,9 +46,10 @@ input = Input . fromMaybe ""
 
 
 compile :: String -> IO ()
-compile source = putStrLn . unlines . output st $ translate program
+compile source = putStrLn . unlines . output st . translate $ program
   where
-    (st, _) = semantics program
+    -- (st, _) = semantics program
+    st = concat.snd.semantics $ program
     program = parse $ alexScanTokens source
 
 processFlags :: [Flag] -> IO () -- empty string is stdin / stdout respectively
@@ -64,7 +65,7 @@ processFlags fs = undefined
             "" -> putStrLn
             xs -> writeFile xs
 
-    symTab  = fmap fst $ semantics <$> program
+    symTab  =  fst <$> semantics <$> program
     program = parse . alexScanTokens <$> input
 
     compileAction = case compileStage of
