@@ -179,9 +179,7 @@ isOperatable _  = False
 castable :: Type -> Type -> Bool
 castable Number Letter = True -- castWarning
 castable Letter Number = True
-castable x y
-  | x == y    = True
-  | otherwise = False
+castable x y = x == y
 
 checkLambda :: Type -> Type -> Bool
 checkLambda lt (Array vt) = lt /= vt
