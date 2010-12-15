@@ -46,11 +46,10 @@ input = Input . fromMaybe ""
 
 
 compile :: String -> IO ()
-compile source = putStrLn . unlines . output st . translate $ program
+compile source =  putStrLn . unlines . output symbolTables . translate  $ program
   where
-    -- (st, _) = semantics program
-    st = concat.snd.semantics $ program
-    program = parse $ alexScanTokens source
+    (program, symbolTables) = semantics . parse $ alexScanTokens source
+
 
 processFlags :: [Flag] -> IO () -- empty string is stdin / stdout respectively
 processFlags fs = undefined
@@ -72,7 +71,7 @@ processFlags fs = undefined
                       Lexer     -> input >>= putStrLn . show . alexScanTokens 
                       Parser    -> input >>= putStrLn . show . parse . alexScanTokens
                       Semantics -> input >>= putStrLn . show . fst . semantics . parse . alexScanTokens
-                      Assembly  -> input >>= putStrLn . unlines . output symTab . translate . parse . alexScanTokens
+                      -- Assembly  -> input >>= putStrLn . unlines . output symTab . translate . parse . alexScanTokens
                       Compile   -> undefined
 
     processFlagStep :: Flag -> (OutputStage, String, String) -> (OutputStage, String, String) 

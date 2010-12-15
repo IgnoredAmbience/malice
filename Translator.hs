@@ -5,8 +5,8 @@ import Data.IORef
 import System.IO.Unsafe
 
 -- Translates statements/expressions/etc into a list of abstract Instructions
-translate :: Program -> [SFn]
-translate functions = map transFunc functions
+translate :: Program -> [SInst]
+translate functions = concatMap transFunc functions
 
 transFunc :: Function -> [SInst]
 transFunc (Function name t args stats) =
