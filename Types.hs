@@ -68,9 +68,11 @@ data AlexPosn = AlexPn { index :: !Int
   deriving (Eq,Show)
 
 type Program = [Function]
+    
 data Function = Function String Type [(String, Type)] [Statement]
               | Lambda String Type [Statement]
   deriving (Eq,Show)
+           
 data Statement = Declare String Type
                | DeclareArr String Type Exp     -- Name, Type, Length
                | Assign Variable Exp
