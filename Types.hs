@@ -87,8 +87,10 @@ data Statement = Declare String Type
                | If Exp [Statement] [Statement]
                | Comment String
   deriving (Eq,Show)
+           
 data Type = Number | Letter | Sentence | Array Type | FunctionType Type [Type] | LambdaType Type
   deriving (Eq,Show)
+           
 data Exp = UnOp UnOp Exp
          | BinOp BinOp Exp Exp
          | FunctionCall String [Exp]
@@ -97,10 +99,13 @@ data Exp = UnOp UnOp Exp
          | Char Char
          | Str String
   deriving (Eq,Show)
+           
 data Variable = Var String | VarArr String Exp
   deriving (Eq,Show)
+           
 data BinOp = Or | Xor | And | Add | Sub | Mul | Div | Mod | LOr | LAnd | Eq | Neq | Lt | Lte | Gt | Gte
   deriving (Eq,Show)
+  
 data UnOp = Not | Neg
   deriving (Eq,Show)
 
