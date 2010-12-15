@@ -1,7 +1,7 @@
 all: main
 
 main: main.hs Lexer.hs Parser.hs Semantics.hs Translator.hs Output.hs Types.hs 
-	ghc --make main.hs
+	ghc --make -W main.hs
 
 Lexer.hs: Lexer.x
 	alex -g Lexer.x

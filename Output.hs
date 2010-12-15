@@ -37,6 +37,8 @@ toASM SNeg = ["neg dword [esp]"]
 toASM SInc = ["inc dword [esp]"]
 toASM SDec = ["dec dword [esp]"]
 
+-- TODO
+toASM (SPrintS s) = []
 toASM SPrintI = ["pop eax"]
 
 toASM (SPushI i) = ["mov eax," ++ (show i)] ++ ["push eax"]
@@ -58,3 +60,8 @@ outputSymbolTable st = "section .bss" : elems (mapWithKey symbolToDef st)
 symbolToDef :: String -> Type -> String
 symbolToDef name Number = name ++ ":\tresd\t1"
 symbolToDef name Letter = name ++ ":\tresb\t1"
+symbolToDef _ (FunctionType _ _) = ""
+symbolToDef _ (LambdaType _) = ""
+--symbolToDef name Sentence = 
+--symbolToDef name (Array a) =
+symbolToDef name x = name ++ " TODO UNKNOWN " ++ show x

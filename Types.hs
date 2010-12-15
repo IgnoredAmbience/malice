@@ -40,7 +40,7 @@ data Token = TokDot
 
            | TokPerhaps
            | TokEither
-          | TokSo
+           | TokSo
            | TokOr
            | TokMaybe
            | TokUnsure

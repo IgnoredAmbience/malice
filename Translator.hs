@@ -1,9 +1,6 @@
 module Translator where
 import Types
 
-import Data.IORef
-import System.IO.Unsafe
-
 -- Translates statements/expressions/etc into a list of abstract Instructions
 translate :: Program -> [SFn]
 translate functions = map transFunc functions
@@ -19,7 +16,12 @@ transFunc (Function name t args stats) =
 		--popArgs ((name,Array _):as) = (popArgs as) ++ -- TODO: check pointer passing
 
 transStat :: ([Statement],Int) -> ([SInst],Int)
+transStat ([], l) = ([], l)
 transStat (((Declare _ _):ss),l)           = (out,l)
+	where (out,_) = transStat (ss,l)
+
+-- FIXME
+transStat (((DeclareArr _ _ _):ss),l)           = (out,l)
 	where (out,_) = transStat (ss,l)
 
 transStat (((Assign (Var name) exp):ss),l) = ((transExp exp) ++ [SPop name] ++ out,l)
@@ -28,21 +30,19 @@ transStat (((Assign (Var name) exp):ss),l) = ((transExp exp) ++ [SPop name] ++ o
 transStat (((Assign (VarArr name index) exp):ss),l) = ((transExp exp) ++ (transExp index) ++ [SPut name] ++ out,l)
 	where (out,_) = transStat (ss,l)
 
-transStat (((Increment (Var name)):ss),l)   = ([SPushN name] ++ [SInc] ++ [SPop name] ++ out,l)
-	where (out,_) = transStat (ss,l)
-transStat (((Increment (VarArr name index)):ss),l)  = ((transExp index) ++ [SGet name] ++ [SInc] ++ (transExp index) ++ [SPut name] ++ out,l)
-	where (out,_) = transStat (ss,l)
-transStat (((Decrement (Var name)):ss),l)           = ([SPushN name] ++ [SDec] ++ [SPop name] ++ out,l)
-	where (out,_) = transStat (ss,l)
-transStat (((Decrement (VarArr name index)):ss),l)  = ((transExp index) ++ [SGet name] ++ [SDec] ++ (transExp index) ++ [SPut name] ++ out,l)
-	where (out,_) = transStat (ss,l)
-
 transStat (((Call (FunctionCall label args)):ss),l) = ((concatMap transExp args) ++ [SCall label] ++ out,l)
 	where (out,_) = transStat (ss,l)
 transStat (((Call _):ss),l)             = (out,l)
 	where (out,_) = transStat (ss,l)
 
-transStat (((Return exp):ss),l)             = ((transExp exp) ++ [SRet] ++ out,l)
+transStat (((Increment (Var name)):ss),l)   = ([SPushN name] ++ [SInc] ++ [SPop name] ++ out,l)
+	where (out,_) = transStat (ss,l)
+transStat (((Increment (VarArr name index)):ss),l)  = ((transExp index) ++ [SGet name] ++ [SInc] ++ (transExp index) ++ [SPut name] ++ out,l)
+	where (out,_) = transStat (ss,l)
+
+transStat (((Decrement (Var name)):ss),l)           = ([SPushN name] ++ [SDec] ++ [SPop name] ++ out,l)
+	where (out,_) = transStat (ss,l)
+transStat (((Decrement (VarArr name index)):ss),l)  = ((transExp index) ++ [SGet name] ++ [SDec] ++ (transExp index) ++ [SPut name] ++ out,l)
 	where (out,_) = transStat (ss,l)
 
 transStat (((LambdaApply label (Var name)):ss),l)   = ([SPushN name] ++ [SCall label] ++ out,l)
@@ -50,15 +50,17 @@ transStat (((LambdaApply label (Var name)):ss),l)   = ([SPushN name] ++ [SCall l
 transStat (((LambdaApply label (VarArr n e)):ss),l) = ((transExp e) ++ [SGet n] ++ [SCall label] ++ out,l)
 	where (out,_) = transStat (ss,l)
 
-{-
-transStat (Input (Var name))               =
-transStat (Input (VarArr name))            =
--}
+-- FIXME
+transStat (Input (Var name) : ss, l)    = transStat (ss, l)
+transStat (Input (VarArr name exp) : ss, l) = transStat (ss, l)
 
 -- TODO:
---transStat (((Output (Str s)):ss),l) = [SPrintS s]
+transStat (Output (Str s):ss,l) = ([SPrintS s], l)
 --	where name = 
---transStat (((Output exp):ss),l)     = (transExp exp) ++ [SPrintI]
+transStat (((Output exp):ss),l)     = ((transExp exp) ++ [SPrintI], l)
+
+transStat (((Return exp):ss),l)             = ((transExp exp) ++ [SRet] ++ out,l)
+	where (out,_) = transStat (ss,l)
 
 transStat (((LoopUntil cond body):ss),l)   = ([SLabel lbl] ++ bod ++ (transExp cond) ++ [SJTrue lbl] ++ out,l')
 	where

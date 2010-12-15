@@ -2,4 +2,4 @@ all:
 	../test .
 
 clean:
-	rm -f *.asm *.o {ex}???
+	rm -f *.asm *.o ex???

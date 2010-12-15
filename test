@@ -1,5 +1,6 @@
 #!/bin/sh
 tmp=/tmp/malice-`date +%s`
+tooldir=`dirname $0`
 mkdir $tmp
 
 #iterate all alice programs
@@ -7,7 +8,7 @@ for ex in ${1%%/}/*.alice; do
   file=`basename $ex`
   echo "$file:"
   echo -n "  Compiling: "
-  ./compile $ex ${ex%%.alice} 2> /dev/null
+  $tooldir/compile $ex ${ex%%.alice} 2> /dev/null
   echo $? > $tmp/${file%%.alice}.compilation-student
 
   # if alice program should not compile
