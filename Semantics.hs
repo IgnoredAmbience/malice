@@ -1,4 +1,4 @@
-module Semantics where
+module Semantics(semantics) where
 import Types
 import qualified Data.Map as Map
 
@@ -53,7 +53,7 @@ addStatement d (ss, st, rt) s@(Declare x t)
     newName = x ++ "_" ++ show d
     rewritten = (Map.member x rt) && (rt Map.! x == newName)
 
-addStatement d (ss,st,rt) s@(DeclareArr name typ size)
+addStatement _ (ss,st,rt) s@(DeclareArr name typ _)
   = (ss++[s], Map.insertWithKey alreadyDefinedError name (Array typ) st, rt)
 
 addStatement _ (ss,st,rt) (Assign var exp)

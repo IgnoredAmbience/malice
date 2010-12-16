@@ -1,4 +1,4 @@
-module Translator where
+module Translator(translate) where
 import Types
 
 -- Translates statements/expressions/etc into a list of abstract Instructions

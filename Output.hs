@@ -1,4 +1,4 @@
-module Output where
+module Output (output) where
 import Types
 import Data.Map (mapWithKey, elems)
 
@@ -36,7 +36,7 @@ toASM SInc = ["inc dword [esp]"]
 toASM SDec = ["dec dword [esp]"]
 
 -- TODO
-toASM (SPrintS s) = []
+toASM (SPrintS _) = []
 toASM SPrintI = ["pop eax"]
 
 toASM (SPushI i) = ["mov eax," ++ (show i)] ++ ["push eax"]

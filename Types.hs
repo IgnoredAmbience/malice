@@ -1,5 +1,6 @@
 module Types where
 import Data.Map (Map)
+import Data.List (intercalate)
 
 data Token = TokDot
            | TokComma
@@ -121,8 +122,77 @@ data SInst = SOr | SXor | SAnd | SAdd | SSub | SMul | SDiv | SMod | SLOr | SLAnd
 		   | SPrintI | SPrintS String -- Print
   deriving (Eq,Show)
 
-{-
-type RFn = [RInst]
+----------------------------------------------
+data MInst = BinMOp BinMInst AsmOp AsmOp
+           | UnMOp  UnMInst  AsmOp
+           | JmpMOp JmpInst Lbl
+           | NonMOp NonMInst
 
-data RInst = 
--}
+data BinMInst = MOr | MXor | MAnd | MAdd | MSub | MMul | MDiv | MMod | MLOr | MCmp -- 2 operand instructions
+data UnMInst  = MNot | MNeg | MInc | MDec | MPush | MPop  -- 1 operand instructions
+data JmpInst  = MJmp | MJGe | MJG | MJLe | MJL | MJE | MJNE | MCall
+data NonMInst = MRet | MLeave | MEnter | MPushA | MPopA
+
+data AsmOp = Reg Reg
+           | Const Int
+           | Name String
+           | Indirect AsmOp
+  deriving (Eq)           
+
+data Reg = EAX
+         | EBX
+  deriving (Eq, Show)
+
+  
+type Lbl = String
+
+instance Show MInst where
+    show (BinMOp o a b) = intercalate " " $ [show o] ++ map show [a,b] --o is not the same type as a & b
+    show (UnMOp o a)    = show o ++ " " ++ show a
+    show (JmpMOp j l)   = show j ++ " " ++ show l
+    show (NonMOp i )    = show i
+
+instance Show BinMInst where
+    show MOr = "or"
+    show MXor = "xor"
+    show MAnd = "and"
+    show MAdd = "add"
+    show MSub = "sub"
+    show MMul = "imul"
+    show MDiv = "idiv"
+    show MMod = "idiv"
+    show MLOr = "or"
+    show MCmp = "cmp"
+
+instance Show UnMInst where
+    show MNot = "not"
+    show MNeg = "neg"
+    show MInc = "inc"
+    show MDec = "dec"
+    show MPush = "push"
+    show MPop = "pop"
+
+instance Show NonMInst where
+    show MRet = "ret"
+    show MLeave = "leave"
+    show MEnter = "enter"
+    show MPopA  = "popa"
+    show MPushA = "push"
+
+instance Show JmpInst where
+    show MJmp  = "jmp"
+    show MJGe  = "jge"
+    show MJG   = "jg"
+    show MJLe  = "jle"
+    show MJL   = "jl"
+    show MJE   = "je"
+    show MJNE  = "jne"
+    show MCall = "call"
+
+instance Show AsmOp where
+    show (Reg r)      = show r
+    show (Const i)    = show i
+    show (Name  s)    = show s
+    show (Indirect a) = concat ["[", show a, "]"]
+
+
