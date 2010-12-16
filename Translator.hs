@@ -2,7 +2,7 @@ module Translator(translate) where
 import Types
 
 -- Translates statements/expressions/etc into a list of abstract Instructions
-translate :: Program -> [SFn]
+translate :: Program -> [[SInst]]
 translate functions = map transFunc functions
 
 transFunc :: Function -> [SInst]

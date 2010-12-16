@@ -1,6 +1,5 @@
 module Types where
 import Data.Map (Map)
-import Data.List (intercalate)
 
 data Token = TokDot
            | TokComma
@@ -120,9 +119,10 @@ data SInst = SOr | SXor | SAnd | SAdd | SSub | SMul | SDiv | SMod | SLOr | SLAnd
 		   | SPushI Int | SPushN String | SPop String | SGet String | SPut String -- Data manipulation instructions
 		   | SLabel String | SJump String | SJTrue String | SCall String | SRet -- Compiler directives
 		   | SPrintI | SPrintS String -- Print
-  deriving (Eq,Show)
+  deriving (Eq)
 
-----------------------------------------------
+
+----------------------------------------
 data MInst = BinMOp BinMInst AsmOp AsmOp
            | UnMOp  UnMInst  AsmOp
            | JmpMOp JmpInst Lbl
@@ -155,13 +155,13 @@ data Reg = EAX
          | EDI
          | ESP
          | EBP
-  deriving (Eq, Show)
+  deriving (Eq)
 
   
 data Lbl = Lbl String --not a type, as a label is a string, but show lbl = lbl ++ ":"
 
 instance Show MInst where
-    show (BinMOp o a b) = intercalate " " $ [show o] ++ map show [a,b] --o is not the same type as a & b
+    show (BinMOp o a b) = show o ++ " " ++ show a ++ "," ++ show b --o is not the same type as a & b
     show (UnMOp o a)    = show o ++ " " ++ show a
     show (JmpMOp j l)   = show j ++ " " ++ show l
     show (NonMOp i )    = show i
@@ -203,13 +203,31 @@ instance Show JmpInst where
     show MJE   = "je"
     show MJNE  = "jne"
     show MCall = "call"
+    show MLabel = ""
 
 instance Show AsmOp where
     show (Reg r)      = show r
     show (Const i)    = show i
-    show (Name  s)    = show s
+    show (Name  s)    = concat ["[",s,"]"]
     show (Indirect a) = concat ["[", show a, "]"]
+    show (IndirectScale a s b) = concat ["[", show a, " ", show s, "*", show b, "]"]
     show (DWord a)    = concat ["[", show a, "]"]
 
 instance Show Lbl where
-    show (Lbl s) = show s ++ ":"
+    show (Lbl s) = s ++ ":"
+
+instance Show Scale where
+    show One = "1"
+    show Two = "2"
+    show Four = "4"
+    show Eight = "8"
+
+instance Show Reg where
+    show EAX = "eax"
+    show EBX = "ebx"
+    show ECX = "ecx"
+    show EDX = "edx"
+    show ESI = "esi"
+    show EDI = "edi"
+    show ESP = "esp"
+    show EBP = "ebp"
