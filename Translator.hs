@@ -58,16 +58,16 @@ transStat (Return exp ) = ((transExp exp) ++ [SRet])
 	
 
 transStat (LoopUntil cond@(BinOp op lhs rhs) body )
-        | elem op comparisons = ([SLabel lbl] ++ bod ++ (transExp lhs) ++ (transExp rhs) ++ [transJOp op lbl])
+	| elem op comparisons = ([SLabel lbl] ++ bod ++ (transExp lhs) ++ (transExp rhs) ++ [transJOp op lbl])
 	| otherwise           = ([SLabel lbl] ++ bod ++ (transExp cond) ++ [SJTrue lbl])
 	where
 	  (Lbl lbl) = newLabel id
-          bod = concatMap transStat body
+	  bod = concatMap transStat body
 	                       
 transStat (LoopUntil cond body ) = ([SLabel lbl] ++ bod ++ (transExp cond) ++ [SJTrue lbl])
 	where
 	  (Lbl lbl) = newLabel id
-          bod = concatMap transStat body
+	  bod = concatMap transStat body
 
 transStat ((If cond@(BinOp op lhs rhs) true false) )
 	| elem op comparisons = ((transExp lhs) ++ (transExp rhs) ++ [(transJOp op) lblT] ++ [SJump lblF]

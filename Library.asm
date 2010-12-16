@@ -1,4 +1,4 @@
-section .bss
+section .data
 
 buf db 80
 
@@ -33,15 +33,16 @@ input_int:
 	xor eax,eax 	; result
 	mov ebx,10		; imul is silly
 
+	xor ecx,ecx
 	ii_1:
-		mov esi,[buf + edi] ; move the next char into esi
-		cmp esi,48		; is it less than '0', if so exit
+		mov cl,[buf + edi] ; move the next char into ecx
+		cmp ecx,48		; is it less than '0', if so exit
 		jl exit
-		cmp esi,57		; is it more than '9', if so exit
+		cmp ecx,57		; is it more than '9', if so exit
 		jg exit
 		imul eax,ebx	; multiply the current result by 10
-		sub esi,48		; convert the ascii number to an actual one
-		add eax,esi		; add it to the result register
+		sub ecx,48		; convert the ascii number to an actual one
+		add eax,ecx		; add it to the result register
 		inc edi			; move to next char
 		jmp ii_1
 
@@ -75,22 +76,22 @@ output_int:
 		xor edx,edx
 		idiv ebx
 		add edx,48
-		mov [buf + edi],edx
+		mov [buf + edi],dl
 		inc edi
 		cmp eax,0
 		jne oi_1
 
 	; flip the buffer
 	mov edx,edi	; save the string length
-	mov [buf + edx],0 ; terminate the string
+	mov byte [buf + edx],0 ; terminate the string
 	dec edi
 	xor esi,esi
 
 	oi_2:
-		mov eax,[buf + esi] ; swap the edi'th and esi'th bytes
-		mov ebx,[buf + edi]
-		mov [buf + edi],eax
-		mov [buf + esi],ebx
+		mov al,[buf + esi] ; swap the edi'th and esi'th bytes
+		mov bl,[buf + edi]
+		mov [buf + edi],al
+		mov [buf + esi],bl
 		inc esi	; inc esi and dec edi
 		dec edi
 		cmp esi,edi ; continue if esi < edi
