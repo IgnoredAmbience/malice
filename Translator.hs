@@ -21,7 +21,7 @@ transStat ([], l) = ([], l)
 
 transStat (Declare _ _ :ss,l)              = (out,l)
 	where (out,_) = transStat (ss,l)
-transStat (DeclareArr name _ length :ss,l) = ([SPushI length] ++ [SPushI 0] ++ [SPut name] ++ out,l)
+transStat (DeclareArr name _ length :ss,l) = ((transExp length) {- equiv to this? ++ [SPushI length]-} ++ [SPushI 0] ++ [SPut name] ++ out,l)
 	where (out,_) = transStat (ss,l)
 
 transStat (Assign (Var name) exp :ss,l)    = ((transExp exp) ++ [SPop name] ++ out,l)
@@ -62,7 +62,7 @@ transStat (Return exp :ss,l) = ((transExp exp) ++ [SRet] ++ out,l)
 	where (out,_) = transStat (ss,l)
 
 transStat (LoopUntil (BinOp op lhs rhs) body :ss,l)
-	| elem op comparisons = ([SLabel lbl] ++ bod ++ (transExp lhs) ++ (transExp rhs) ++ [(transJOp op) lbl] ++ out,l')
+	| elem op comparisons = ([SLabel lbl] ++ bod ++ (transExp lhs) ++ (transExp rhs) ++ [transJOp op lbl] ++ out,l')
 	| otherwise           = ([SLabel lbl] ++ bod ++ (transExp cond) ++ [SJTrue lbl] ++ out,l')
 	where
 		lbl = "L"++(show l)
@@ -75,11 +75,11 @@ transStat (LoopUntil cond body :ss,l) = ([SLabel lbl] ++ bod ++ (transExp cond) 
 		(bod,l') = transStat (body,l+1)
 		(out,_)  = transStat (ss,l')
 
-transStat (If (BinOp op lhs rhs) body) :ss,l)
-	| elem op comparisons = (transExp lhs) ++ (transExp rhs) ++ [(transJOp op) lblT] ++ [SJump lblF]
+transStat ((If cond@(BinOp op lhs rhs) true false) :ss,l)
+	| elem op comparisons = ((transExp lhs) ++ (transExp rhs) ++ [(transJOp op) lblT] ++ [SJump lblF]
 							++ [SLabel lblT] ++ bodT ++ [SJump lblE]
 							++ [SLabel lblF] ++ bodF ++ [SLabel lblE] ++ out,l'')
-	| otherwise           = (transExp cond) ++ [SJTrue lblT] ++ [SJump lblF]
+	| otherwise           = ((transExp cond) ++ [SJTrue lblT] ++ [SJump lblF]
 							++ [SLabel lblT] ++ bodT ++ [SJump lblE]
 							++ [SLabel lblF] ++ bodF ++ [SLabel lblE] ++ out,l'')
 	where
@@ -139,12 +139,12 @@ transOp Gte  = [SGte]
 
 comparisons = [LOr, LAnd, Eq, Neq, Lt, Lte, Gt, Gte]
 
-transJOp :: BinOp -> [SInst]
-transJOp LOr  = [SJLOr]
-transJOp LAnd = [SJLAnd]
-transJOp Eq   = [SJEq]
-transJOp Neq  = [SJNeq]
-transJOp Lt   = [SJLt]
-transJOp Lte  = [SJLte]
-transJOp Gt   = [SJGt]
-transJOp Gte  = [SJGte]
+transJOp :: BinOp -> String -> SInst
+transJOp LOr  = SJLOr
+transJOp LAnd = SJLAnd
+transJOp Eq   = SJEq
+transJOp Neq  = SJNeq
+transJOp Lt   = SJLt
+transJOp Lte  = SJLte
+transJOp Gt   = SJGt
+transJOp Gte  = SJGte
