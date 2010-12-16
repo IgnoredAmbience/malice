@@ -50,7 +50,7 @@ toASM (SLabel label) = [label++":"]
 toASM (SJump label)  = ["jmp "++label]
 toASM (SJTrue label) = ["pop eax"] ++ ["cmp eax,0"] ++ ["jne "++label]
 toASM (SCall label)  = ["call "++label]
-toASM (SRet)         = ["ret"]
+toASM (SRet)         = ["pop eax"] ++ ["ret"]
 
 outputSymbolTable :: SymbolTbl -> [String]
 outputSymbolTable st = "section .bss" : elems (mapWithKey symbolToDef st)
