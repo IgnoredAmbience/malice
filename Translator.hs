@@ -16,15 +16,12 @@ transFunc (Function name t args stats) =
 		popArgs ((name,Array _):as) = (popArgs as) ++ -- TODO: check pointer passing
 
 transStat :: ([Statement],Int) -> ([SInst],Int)
-<<<<<<< HEAD
-=======
 transStat ([], l) = ([], l)
 transStat (((Declare _ _):ss),l)           = (out,l)
->>>>>>> e30eae283f6a73acffc0493755a3ebaf2c9d935a
 	where (out,_) = transStat (ss,l)
 
 -- FIXME
-transStat (((DeclareArr _ _ _):ss),l)           = (out,l)
+transStat (((DeclareArr name _ length):ss),l) = ([SPushI length] ++ [SPushI 0] ++ [SPut name] ++ out,l)
 	where (out,_) = transStat (ss,l)
 
 transStat (((Assign (Var name) exp):ss),l) = ((transExp exp) ++ [SPop name] ++ out,l)
@@ -58,15 +55,11 @@ transStat (Input (Var name) : ss, l)    = transStat (ss, l)
 transStat (Input (VarArr name exp) : ss, l) = transStat (ss, l)
 
 -- TODO:
-<<<<<<< HEAD
-=======
 transStat (Output (Str s):ss,l) = ([SPrintS s], l)
---	where name = 
 transStat (((Output exp):ss),l)     = ((transExp exp) ++ [SPrintI], l)
 
 transStat (((Return exp):ss),l)             = ((transExp exp) ++ [SRet] ++ out,l)
 	where (out,_) = transStat (ss,l)
->>>>>>> e30eae283f6a73acffc0493755a3ebaf2c9d935a
 
 -- TODO: More efficient condition workings (eg, not needing the horrendous mess that is gte/lte/usw...
 transStat (((LoopUntil cond body):ss),l) 
