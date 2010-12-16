@@ -5,9 +5,9 @@ import Data.HashTable (hashString)
 
 type Rewrite = Map.Map String String
 
-semantics :: Program -> (Program, [SymbolTbl], DataTbl)
+semantics :: Program -> (Program, [SymbolTbl])
 semantics funcs
-  = unzip $ map (buildFunctionSymbolTbl (funcTbl, Map.empty)) funcs
+  = unzip $ map (buildFunctionSymbolTbl (funcTbl) funcs
     where
       funcTbl = foldl addFunction Map.empty funcs
 
