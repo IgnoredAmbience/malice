@@ -1,13 +1,12 @@
 module Translator where
 import Types
-import Data.List
 
 -- Translates statements/expressions/etc into a list of abstract Instructions
 translate :: Program -> [SFn]
 translate functions = map transFunc functions
 
 transFunc :: Function -> [SInst]
-transFunc (Function name t args stats) =
+transFunc (Function name _ args stats) =
 	[SLabel name] ++ (popArgs args) ++ code
 	where
 		(code,_) = transStat (stats,1)
@@ -21,7 +20,7 @@ transStat ([], l) = ([], l)
 
 transStat (Declare _ _ :ss,l)              = (out,l)
 	where (out,_) = transStat (ss,l)
-transStat (DeclareArr name _ length :ss,l) = ((transExp length) {- equiv to this? ++ [SPushI length]-} ++ [SPushI 0] ++ [SPut name] ++ out,l)
+transStat (DeclareArr name _ length :ss,l) = ((transExp length) ++ [SPushI 0] ++ [SPut name] ++ out,l)
 	where (out,_) = transStat (ss,l)
 
 transStat (Assign (Var name) exp :ss,l)    = ((transExp exp) ++ [SPop name] ++ out,l)
@@ -55,20 +54,21 @@ transStat (Input (Var name) : ss, l)        = transStat (ss, l)
 transStat (Input (VarArr name exp) : ss, l) = transStat (ss, l)
 
 -- TODO:
-transStat (Output (Str s):ss,l) = ([SPrintS s], l)
-transStat (Output exp :ss,l) = ((transExp exp) ++ [SPrintI], l)
+transStat (Output (Str s):ss,l) = ([SPrintS s] ++ out, l)
+	where (out,_) = transStat (ss,l)
+transStat (Output exp :ss,l) = ((transExp exp) ++ [SPrintI] ++ out, l)
+	where (out,_) = transStat (ss,l)
 
 transStat (Return exp :ss,l) = ((transExp exp) ++ [SRet] ++ out,l)
 	where (out,_) = transStat (ss,l)
 
-transStat (LoopUntil (BinOp op lhs rhs) body :ss,l)
+transStat (LoopUntil cond@(BinOp op lhs rhs) body :ss,l)
 	| elem op comparisons = ([SLabel lbl] ++ bod ++ (transExp lhs) ++ (transExp rhs) ++ [transJOp op lbl] ++ out,l')
 	| otherwise           = ([SLabel lbl] ++ bod ++ (transExp cond) ++ [SJTrue lbl] ++ out,l')
 	where
 		lbl = "L"++(show l)
 		(bod,l') = transStat (body,l+1)
 		(out,_)  = transStat (ss,l')
-		cond = (BinOp op lhs rhs)
 transStat (LoopUntil cond body :ss,l) = ([SLabel lbl] ++ bod ++ (transExp cond) ++ [SJTrue lbl] ++ out,l')
 	where
 		lbl = "L"++(show l)
@@ -90,11 +90,10 @@ transStat ((If cond@(BinOp op lhs rhs) true false) :ss,l)
 		(bodT,l')  = transStat (true,l+1)
 		(bodF,l'') = transStat (false,l'+1)
 		(out,_)    = transStat (ss,l'')
-		cond = (BinOp op lhs rhs)
 
-transStat (If cond true false :ss,l) = ((transExp cond) ++ [SJTrue (lbl++"_true")] ++ [SJump (lbl++"_false")]
-										++ [SLabel (lbl++"_true")] ++ bodT ++ [SJump (lbl++"_end")]
-										++ [SLabel (lbl++"_false")] ++ bodF ++ [SLabel (lbl++"_end")] ++ out,l'')
+transStat (If cond true false :ss,l) = ((transExp cond) ++ [SJTrue lblT] ++ [SJump lblF]
+										++ [SLabel lblT] ++ bodT ++ [SJump lblE]
+										++ [SLabel lblF] ++ bodF ++ [SLabel lblE] ++ out,l'')
 	where
 		lbl = "L"++(show l)
 		lblT = lbl++"_true"
