@@ -19,14 +19,14 @@ main = do
 
 data Flag = Output String | Input String | OutputMade OutputStage
   deriving (Show)
-data OutputStage = Lexer | Parser | Semantics | Assembly | Compile
+data OutputStage = Lexer | Parser | Semantics | Assembler
   deriving (Show, Eq,Ord)
 
 options :: [OptDescr Flag]
 options = [ Option ['S','s'] ["semantics"] (NoArg (OutputMade Semantics)) "output the symbol table",
             Option ['L','l'] ["lexer"]     (NoArg (OutputMade Lexer)) "output the token list",
             Option ['P','p'] ["parser"]    (NoArg (OutputMade Parser)) "output the AST",
-            Option ['A','a'] ["assembly"]  (NoArg (OutputMade Compile)) "output the generated assembly",                  
+            Option ['A','a'] ["assembly"]  (NoArg (OutputMade Assembler)) "output the generated assembly",                  
             Option ['O','o'] ["out","output"]      (ReqArg Output "FILE") "output to FILE",
             Option ['F','f'] ["in","input","file"] (ReqArg Input "FILE")   "input from FILE"
           ]
@@ -46,9 +46,9 @@ processFlags fs = input >>=
                       Lexer     -> outputData . groomString . show . alexScanTokens 
                       Parser    -> outputData . groomString . show . parse . alexScanTokens
                       Semantics -> outputData . groomString . show . snd . semantics . parse . alexScanTokens
-                      Compile   -> outputData . assemble
+                      Assembler   -> outputData . assemble
   where
-    (compileStage, inFrom, outTo) = foldr processFlagStep (Compile, "", "") fs
+    (compileStage, inFrom, outTo) = foldr processFlagStep (Assembler, "", "") fs
 
     input = case inFrom of
               "" -> getContents
