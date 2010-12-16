@@ -16,10 +16,10 @@ transFunc (Function name t args stats) =
 		popArgs :: [(String,Type)] -> [SInst]
 		popArgs []                  = []
 		popArgs ((name,Number):as)  = (popArgs as) ++ [SPushN name]
-		--popArgs ((name,Array _):as) = (popArgs as) ++ -- TODO: check pointer passing
+		popArgs ((name,Array _):as) = (popArgs as) ++ -- TODO: check pointer passing
 
 transStat :: ([Statement],Int) -> ([SInst],Int)
-transStat (((Declare _ _):ss),l)           = (out,l)
+transStat (((Declare _ _):ss),l) = (out,l)
 	where (out,_) = transStat (ss,l)
 
 transStat (((Assign (Var name) exp):ss),l) = ((transExp exp) ++ [SPop name] ++ out,l)
@@ -57,10 +57,11 @@ transStat (Input (VarArr name))            =
 
 -- TODO:
 transStat (((Output (Str s)):ss),l) = [SPrintS s]
-	where name = 
 transStat (((Output exp):ss),l)     = (transExp exp) ++ [SPrintI]
 
-transStat (((LoopUntil cond body):ss),l)   = ([SLabel lbl] ++ bod ++ (transExp cond) ++ [SJTrue lbl] ++ out,l')
+-- TODO: More efficient condition workings (eg, not needing the horrendous mess that is gte/lte/usw...
+transStat (((LoopUntil cond body):ss),l) 
+	| otherwise = ([SLabel lbl] ++ bod ++ (transExp cond) ++ [SJTrue lbl] ++ out,l')
 	where
 		lbl = "L"++(show l)
 		(bod,l') = transStat (body,l+1)
@@ -77,12 +78,12 @@ transStat (((Comment _):ss),l) = (out,l)
 	where (out,_) = transStat (ss,l)
 
 transExp :: Exp -> [SInst]
-transExp (Int i) = [SPushI i]
-transExp (Variable (Var name)) = [SPushN name]
+transExp (Int i)                        = [SPushI i]
+transExp (Variable (Var name))          = [SPushN name]
 transExp (Variable (VarArr name index)) = (transExp index) ++ [SGet name]
-transExp (FunctionCall fn args) = (concatMap transExp args) ++ [SCall fn]
-transExp (UnOp op exp) = (transExp exp) ++ (transUnOp op)
-transExp (BinOp op exp1 exp2) = (transExp exp1) ++ (transExp exp2) ++ (transOp op)
+transExp (FunctionCall fn args)         = (concatMap transExp args) ++ [SCall fn]
+transExp (UnOp op exp)                  = (transExp exp) ++ (transUnOp op)
+transExp (BinOp op exp1 exp2)           = (transExp exp1) ++ (transExp exp2) ++ (transOp op)
 transExp _ = []
 
 transUnOp :: UnOp -> [SInst]
