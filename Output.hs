@@ -6,7 +6,7 @@ output :: [SymbolTbl] -> [SFn] -> [[String]]
 output st fns = [x++y | (x,y) <- zip (map outputSymbolTable st) (map outputASM fns)]
 
 outputASM :: [SInst] -> [String]
-outputASM insts = ["global "++fname] ++ concatMap toASM insts ++ ["ret"]
+outputASM insts = ["section .text"] ++ ["global "++fname] ++ concatMap toASM insts ++ ["ret"]
 	where (SLabel fname) = head insts
 
 toASM :: SInst -> [String]
