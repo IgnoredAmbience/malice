@@ -90,6 +90,7 @@ transStat ((If cond@(BinOp op lhs rhs) true false) :ss,l)
 		(bodT,l')  = transStat (true,l+1)
 		(bodF,l'') = transStat (false,l'+1)
 		(out,_)    = transStat (ss,l'')
+		cond = (BinOp op lhs rhs)
 
 transStat (If cond true false :ss,l) = ((transExp cond) ++ [SJTrue (lbl++"_true")] ++ [SJump (lbl++"_false")]
 										++ [SLabel (lbl++"_true")] ++ bodT ++ [SJump (lbl++"_end")]
