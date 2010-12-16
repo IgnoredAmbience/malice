@@ -82,7 +82,7 @@ import Types
 
 %%
 
-Program     : Statements Functions            { [Function "_start" Number [] $1] ++ $2 }
+Program     : Statements Functions            { [Function "main" Number [] $1] ++ $2 }
 
 Statements  : Statements Statement Terminator { $1 ++ [$2] }
             | {- empty -}                     { [] }

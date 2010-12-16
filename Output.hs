@@ -6,9 +6,7 @@ output :: [SymbolTbl] -> [SFn] -> [[String]]
 output st fns = [x++y | (x,y) <- zip (map outputSymbolTable st) (map outputASM fns)]
 
 outputASM :: [SInst] -> [String]
--- Check that main is called main, and how it's parsed (does it still need "_start:" declared specifically)
-outputASM ((SLabel "main"):insts) = ["section .text"] ++ ["global _start"] ++ concatMap toASM insts ++ ["pop ebx"] ++ ["mov eax,1"] ++ ["int 0x80"]
-outputASM insts = ["section .text"] ++ ["global "++fname] ++ concatMap toASM insts
+outputASM insts = ["global "++fname] ++ concatMap toASM insts ++ ["ret"]
 	where (SLabel fname) = head insts
 
 toASM :: SInst -> [String]
