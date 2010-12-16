@@ -3,5 +3,5 @@ path=`dirname $0`
 name=${1%.*}
 $path/main -f $1 > $name.asm && \
 nasm -f elf -o $name.o $name.asm && \
-ld -melf_i386 -N -o $name $name.o Library.o
+ld -melf_i386 -N -o $name $name.o $path/Library.o
 
