@@ -1,14 +1,21 @@
 section .text
 
-global input_int
-global output_str
-global output_int
-
-
+EXIT   equ 1
 WRITE  equ 4
 STDOUT equ 1
 STDIN  equ 2
 
+global input_int
+global output_str
+global output_int
+global _start
+extern main
+
+_start:
+  call main
+  mov ebx,eax
+  mov eax, EXIT
+  int 80H
 
 input_int:
 

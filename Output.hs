@@ -6,9 +6,7 @@ output :: [SymbolTbl] -> [SFn] -> [[String]]
 output st fns = [x++y | (x,y) <- zip (map outputSymbolTable st) (map outputASM fns)]
 
 outputASM :: [SInst] -> [String]
--- Check that main is called main, and how it's parsed (does it still need "_start:" declared specifically)
-outputASM ((SLabel "main"):insts) = ["section .text"] ++ ["global _start"] ++ concatMap toASM insts ++ ["pop ebx"] ++ ["mov eax,1"] ++ ["int 0x80"]
-outputASM insts = ["section .text"] ++ ["global "++fname] ++ concatMap toASM insts
+outputASM insts = ["section .text"] ++ ["global "++fname] ++ concatMap toASM insts ++ ["ret"]
 	where (SLabel fname) = head insts
 
 toASM :: SInst -> [String]
@@ -37,6 +35,8 @@ toASM SNeg = ["neg dword [esp]"]
 toASM SInc = ["inc dword [esp]"]
 toASM SDec = ["dec dword [esp]"]
 
+-- TODO
+toASM (SPrintS s) = []
 toASM SPrintI = ["pop eax"]
 
 toASM (SPushI i) = ["mov eax," ++ (show i)] ++ ["push eax"]
@@ -50,7 +50,7 @@ toASM (SLabel label) = [label++":"]
 toASM (SJump label)  = ["jmp "++label]
 toASM (SJTrue label) = ["pop eax"] ++ ["cmp eax,0"] ++ ["jne "++label]
 toASM (SCall label)  = ["call "++label]
-toASM (SRet)         = ["ret"]
+toASM (SRet)         = ["pop eax"] ++ ["ret"]
 
 outputSymbolTable :: SymbolTbl -> [String]
 outputSymbolTable st = "section .bss" : elems (mapWithKey symbolToDef st)
@@ -58,3 +58,8 @@ outputSymbolTable st = "section .bss" : elems (mapWithKey symbolToDef st)
 symbolToDef :: String -> Type -> String
 symbolToDef name Number = name ++ ":\tresd\t1"
 symbolToDef name Letter = name ++ ":\tresb\t1"
+symbolToDef _ (FunctionType _ _) = ""
+symbolToDef _ (LambdaType _) = ""
+--symbolToDef name Sentence = 
+--symbolToDef name (Array a) =
+symbolToDef name x = name ++ " TODO UNKNOWN " ++ show x
