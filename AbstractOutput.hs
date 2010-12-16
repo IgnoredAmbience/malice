@@ -59,8 +59,11 @@ toSymbInstr (SPushI i) = [BinMOp MMov (Reg EAX) (Const i), UnMOp MPush (Reg EAX)
 toSymbInstr (SPushN n) = [BinMOp MMov (Reg EAX) (Name n) , UnMOp MPush (Reg EAX)]
 toSymbInstr (SPop n) = [UnMOp MPop (Reg EAX), BinMOp MMov (Name n) (Reg EAX)]
 
-toSymbInstr (SGet n) = [UnMOp MPop (Reg EAX), BinMOp MMov (Reg EBX) (Name n), BinMOp MMov (Reg EAX) (IndirectScale (Reg EBX) Four (Reg EAX)), UnMOp MPush (Reg EAX)]
-toSymbInstr (SPut n) = [UnMOp MPop (Reg EAX), BinMOp MMov (Reg EBX) (Name n), UnMOp MPop (Reg ECX), BinMOp MMov (IndirectScale (Reg EBX) Four (Reg EAX)) (Reg ECX)]
+toSymbInstr (SGet n) = [UnMOp MPop (Reg EAX), BinMOp MMov (Reg EBX) (Name n) -- Get the index and name
+                     , BinMOp MMov (Reg EAX) (IndirectScale (Reg EBX) Four (Reg EAX)), UnMOp MPush (Reg EAX)] -- Get the value itself and push it
+
+toSymbInstr (SPut n) = [UnMOp MPop (Reg EAX), BinMOp MMov (Reg EBX) (Name n), UnMOp MPop (Reg ECX) -- Get the value, name and index
+                     , BinMOp MMov (IndirectScale (Reg EBX) Four (Reg EAX)) (Reg ECX)] -- Put the value
 
 toSymbInstr (SJump label)  = [JmpMOp MJmp (Lbl label)]
 toSymbInstr (SJTrue label) = [UnMOp MPop (Reg EAX), BinMOp MCmp (Reg EAX) (Const 0), JmpMOp MJNE (Lbl label)]

@@ -148,4 +148,3 @@ transJOp Lt   = SJLt
 transJOp Lte  = SJLte
 transJOp Gt   = SJGt
 transJOp Gte  = SJGte
-
