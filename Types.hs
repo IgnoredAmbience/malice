@@ -128,23 +128,37 @@ data MInst = BinMOp BinMInst AsmOp AsmOp
            | JmpMOp JmpInst Lbl
            | NonMOp NonMInst
 
-data BinMInst = MOr | MXor | MAnd | MAdd | MSub | MMul | MDiv | MMod | MLOr | MCmp -- 2 operand instructions
-data UnMInst  = MNot | MNeg | MInc | MDec | MPush | MPop  -- 1 operand instructions
-data JmpInst  = MJmp | MJGe | MJG | MJLe | MJL | MJE | MJNE | MCall
-data NonMInst = MRet | MLeave | MEnter | MPushA | MPopA
+data BinMInst = MOr | MXor | MAnd | MAdd | MSub | MMul | MLOr | MCmp | MMov -- 2 operand instructions
+data UnMInst  = MDiv | MMod | MNot | MNeg | MInc | MDec | MPush | MPop  -- 1 operand instructions
+data JmpInst  = MJmp | MJGE | MJG | MJLE | MJL | MJE | MJNE | MCall | MLabel
+data NonMInst = MRet | MLeave | MEnter | MPushA | MPopA 
 
 data AsmOp = Reg Reg
            | Const Int
            | Name String
            | Indirect AsmOp
+           | IndirectScale AsmOp Scale AsmOp
+           | DWord AsmOp
   deriving (Eq)           
+
+data Scale = One 
+           | Two 
+           | Four 
+           | Eight 
+  deriving (Eq)
 
 data Reg = EAX
          | EBX
+         | ECX
+         | EDX
+         | ESI
+         | EDI
+         | ESP
+         | EBP
   deriving (Eq, Show)
 
   
-type Lbl = String
+data Lbl = Lbl String --not a type, as a label is a string, but show lbl = lbl ++ ":"
 
 instance Show MInst where
     show (BinMOp o a b) = intercalate " " $ [show o] ++ map show [a,b] --o is not the same type as a & b
@@ -159,10 +173,9 @@ instance Show BinMInst where
     show MAdd = "add"
     show MSub = "sub"
     show MMul = "imul"
-    show MDiv = "idiv"
-    show MMod = "idiv"
     show MLOr = "or"
     show MCmp = "cmp"
+    show MMov = "mov"
 
 instance Show UnMInst where
     show MNot = "not"
@@ -171,6 +184,8 @@ instance Show UnMInst where
     show MDec = "dec"
     show MPush = "push"
     show MPop = "pop"
+    show MDiv = "idiv"
+    show MMod = "idiv"
 
 instance Show NonMInst where
     show MRet = "ret"
@@ -181,9 +196,9 @@ instance Show NonMInst where
 
 instance Show JmpInst where
     show MJmp  = "jmp"
-    show MJGe  = "jge"
+    show MJGE  = "jge"
     show MJG   = "jg"
-    show MJLe  = "jle"
+    show MJLE  = "jle"
     show MJL   = "jl"
     show MJE   = "je"
     show MJNE  = "jne"
@@ -194,5 +209,7 @@ instance Show AsmOp where
     show (Const i)    = show i
     show (Name  s)    = show s
     show (Indirect a) = concat ["[", show a, "]"]
+    show (DWord a)    = concat ["[", show a, "]"]
 
-
+instance Show Lbl where
+    show (Lbl s) = show s ++ ":"
