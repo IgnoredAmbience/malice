@@ -111,6 +111,7 @@ data UnOp = Not | Neg
 
 -- (Global vars, [Function vars])
 type SymbolTbl = Map String Type
+type DataTbl = Map String String
 
 type SFn = [SInst]
 
