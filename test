@@ -9,7 +9,7 @@ pass=0
 
 #iterate all alice programs
 for ex in ${1%%/}/*.alice; do
-  $((count++))
+  count=$((count+1))
   file=`basename $ex`
   echo "$file:"
   echo -n "  Compiling: "
@@ -19,6 +19,8 @@ for ex in ${1%%/}/*.alice; do
   # if alice program should not compile
   if [ "$(cat ${ex%%.alice}.compilation)" != "0" ]; then
     if [ "$(cat $tmp/${file%%.alice}.compilation-student)" != "0" ]; then
+      pass=$((pass+1))
+      compile=$((compile+1))
       echo "OK (compilation failure expected)"
     else
       # student compiler missed errors
@@ -29,7 +31,7 @@ for ex in ${1%%/}/*.alice; do
       echo "FAIL (compilation should have succeeded)"
     else
       echo "OK"
-      $((compile++))
+      compile=$((compile+1))
 
       #for each input data set
       for input in ${ex%%.alice}.*.input; do
@@ -38,10 +40,10 @@ for ex in ${1%%/}/*.alice; do
         ${ex%%.alice} > $tmp/${inputf%%.input}.output-student < ${input}
         echo $? > $tmp/${inputf%%.input}.retvalue-student
 
-        if cmp --silent ${input%%.input}.retvalue ${tmp}/${inputf%%.input}.retvalue-student && cmp --silent ${ex%%.alice} > ${input%%.input}.output ${ex%%.alice} > ${tmp}/${inputf%%.input}.output-student; then
+        if cmp --silent ${input%%.input}.retvalue ${tmp}/${inputf%%.input}.retvalue-student && cmp --silent ${input%%.input}.output ${tmp}/${inputf%%.input}.output-student; then
           echo all good
 
-          $((pass++))
+          pass=$((pass+1))
         else
           echo failed
         fi

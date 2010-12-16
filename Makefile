@@ -10,7 +10,7 @@ Parser.hs: Parser.y
 	happy -g Parser.y
 
 Library.o: Library.asm
-	nasm -f elf -o Library.o Library.asm
+	nasm -g -f elf -o Library.o Library.asm
 
 clean:
 	rm -f *.o *.hi main
