@@ -36,7 +36,7 @@ for ex in ${1%%/}/*.alice; do
       #for each input data set
       for input in ${ex%%.alice}.*.input; do
         inputf=`basename $input`
-        echo "  Testing $input:"
+        echo -n "  Testing $input: "
         ${ex%%.alice} > $tmp/${inputf%%.input}.output-student < ${input}
         echo $? > $tmp/${inputf%%.input}.retvalue-student
 
