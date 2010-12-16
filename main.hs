@@ -20,13 +20,14 @@ main = do
 
 data Flag = Output String | Input String | OutputMade OutputStage
   deriving (Show)
-data OutputStage = Lexer | Parser | Semantics | Assembler
+data OutputStage = Lexer | Parser | Semantics | Translator | Assembler
   deriving (Show, Eq,Ord)
 
 options :: [OptDescr Flag]
 options = [ Option ['S','s'] ["semantics"] (NoArg (OutputMade Semantics)) "output the symbol table",
             Option ['L','l'] ["lexer"]     (NoArg (OutputMade Lexer)) "output the token list",
             Option ['P','p'] ["parser"]    (NoArg (OutputMade Parser)) "output the AST",
+            Option ['T','t'] ["translate"] (NoArg (OutputMade Translator)) "output intermediary assembly",
             Option ['A','a'] ["assembly"]  (NoArg (OutputMade Assembler)) "output the generated assembly",                  
             Option ['O','o'] ["out","output"]      (ReqArg Output "FILE") "output to FILE",
             Option ['F','f'] ["in","input","file"] (ReqArg Input "FILE")   "input from FILE"
@@ -46,7 +47,8 @@ processFlags fs = input >>=
                   case compileStage of
                       Lexer     -> outputData . groomString . show . alexScanTokens 
                       Parser    -> outputData . groomString . show . parse . alexScanTokens
-                      Semantics -> outputData . groomString . show . snd . semantics . parse . alexScanTokens
+                      Semantics -> outputData . groomString . show . semantics . parse . alexScanTokens
+                      Translator -> outputData . groomString . show . translate . fst . semantics . parse . alexScanTokens
                       Assembler   -> outputData . assemble
   where
     (compileStage, inFrom, outTo) = foldr processFlagStep (Assembler, "", "") fs

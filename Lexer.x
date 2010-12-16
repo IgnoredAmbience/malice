@@ -1,6 +1,7 @@
 {
 module Lexer where
 import Types
+import Data.Char (readLitChar)
 }
 
 $digit = 0-9      -- digits
@@ -70,7 +71,7 @@ tokens :-
   [\)]                  { \s -> TokRBrace }
   [$alpha\_][$alpha\_$digit]* { \s -> TokId s }
   \'.\'                 { \s -> TokChar (s!!1) }
-  \"[^\"]*\"            { \s -> TokStr s }
+  \"[^\"]*\"            { \s -> TokStr (parseStr s) }
 
 {
 -- Taken from the posn wrapper, since AlexPosn conflicts with definition in Types
@@ -101,4 +102,11 @@ alexScanTokens str = go (alexStartPos,'\n',str)
                 AlexError _ -> error $ "lexical error on line " ++ show (line pos) ++ " at column " ++ show (lineIdx pos)
                 AlexSkip  inp' len     -> go inp'
                 AlexToken inp' len act -> (act (take len str), pos) : go inp'
+
+parseStr = unescapeStr . init . tail 
+unescapeStr :: String -> String
+unescapeStr [] = []
+unescapeStr s = chr : unescapeStr s'
+  where (chr, s'):_ = readLitChar s
+
 }
