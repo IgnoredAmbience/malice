@@ -75,11 +75,30 @@ transStat (LoopUntil cond body :ss,l) = ([SLabel lbl] ++ bod ++ (transExp cond) 
 		(bod,l') = transStat (body,l+1)
 		(out,_)  = transStat (ss,l')
 
+transStat (If (BinOp op lhs rhs) body) :ss,l)
+	| elem op comparisons = (transExp lhs) ++ (transExp rhs) ++ [(transJOp op) lblT] ++ [SJump lblF]
+							++ [SLabel lblT] ++ bodT ++ [SJump lblE]
+							++ [SLabel lblF] ++ bodF ++ [SLabel lblE] ++ out,l'')
+	| otherwise           = (transExp cond) ++ [SJTrue lblT] ++ [SJump lblF]
+							++ [SLabel lblT] ++ bodT ++ [SJump lblE]
+							++ [SLabel lblF] ++ bodF ++ [SLabel lblE] ++ out,l'')
+	where
+		lbl = "L"++(show l)
+		lblT = lbl++"_true"
+		lblF = lbl++"_false"
+		lblE = lbl++"_end"
+		(bodT,l')  = transStat (true,l+1)
+		(bodF,l'') = transStat (false,l'+1)
+		(out,_)    = transStat (ss,l'')
+
 transStat (If cond true false :ss,l) = ((transExp cond) ++ [SJTrue (lbl++"_true")] ++ [SJump (lbl++"_false")]
 										++ [SLabel (lbl++"_true")] ++ bodT ++ [SJump (lbl++"_end")]
 										++ [SLabel (lbl++"_false")] ++ bodF ++ [SLabel (lbl++"_end")] ++ out,l'')
 	where
 		lbl = "L"++(show l)
+		lblT = lbl++"_true"
+		lblF = lbl++"_false"
+		lblE = lbl++"_end"
 		(bodT,l')  = transStat (true,l+1)
 		(bodF,l'') = transStat (false,l'+1)
 		(out,_)    = transStat (ss,l'')
