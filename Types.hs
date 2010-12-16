@@ -133,7 +133,7 @@ data MInst = BinMOp BinMInst AsmOp AsmOp
 data BinMInst = MOr | MXor | MAnd | MAdd | MSub | MMul | MLOr | MCmp | MMov -- 2 operand instructions
 data UnMInst  = MDiv | MMod | MNot | MNeg | MInc | MDec | MPush | MPop  -- 1 operand instructions
 data JmpInst  = MJmp | MJGE | MJG | MJLE | MJL | MJE | MJNE | MCall 
-data NonMInst = MRet | MLeave | MEnter | MPushA | MPopA 
+data NonMInst = MRet | MLeave | MEnter | MPushA | MPopA -- 0 operand instructions
 
 data AsmOp = Reg Reg
            | Const Int

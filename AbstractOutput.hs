@@ -53,7 +53,7 @@ toSymbInstr SDec = [UnMOp MDec (DWord (Indirect (Reg ESP)))]
 
 -- TODO
 toSymbInstr (SPrintS _) = []
-toSymbInstr SPrintI = [UnMOp MPop (Reg EAX)]
+toSymbInstr SPrintI = [UnMOp MPop (Reg EAX)] ++ [MCall (Lbl "output_int")]
 
 toSymbInstr (SPushI i) = [BinMOp MMov (Reg EAX) (Const i), UnMOp MPush (Reg EAX)]
 toSymbInstr (SPushN n) = [BinMOp MMov (Reg EAX) (Name n) , UnMOp MPush (Reg EAX)]
