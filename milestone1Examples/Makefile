@@ -1,5 +1,5 @@
 all:
-	echo "Not yet"
+	../test .
 
 clean:
-	rm -f *.asm *.o ex??
+	rm -f ????.asm *.o ex??
