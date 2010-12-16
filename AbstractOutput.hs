@@ -58,9 +58,9 @@ toSymbInstr SPrintI = [UnMOp MPop (Reg EAX)]
 toSymbInstr (SPushI i) = [BinMOp MMov (Reg EAX) (Const i), UnMOp MPush (Reg EAX)]
 toSymbInstr (SPushN n) = [BinMOp MMov (Reg EAX) (Name n) , UnMOp MPush (Reg EAX)]
 toSymbInstr (SPop n) = [UnMOp MPop (Reg EAX), BinMOp MMov (Name n) (Reg EAX)]
--- TODO: Change these to index from 1 with bounds checking. Also, figure out how/when to get the bound into the array first...
-toSymbInstr (SGet n) = [UnMOp MPop (Reg EAX), UnMOp MDec (Reg EAX), BinMOp MMov (Reg EBX) (Name n), BinMOp MMov (Reg EAX) (IndirectScale (Reg EBX) Four (Reg EAX)), UnMOp MPush (Reg EAX)]
-toSymbInstr (SPut n) = [UnMOp MPop (Reg EAX), UnMOp MDec (Reg EAX), BinMOp MMov (Reg EBX) (Name n), UnMOp MPop (Reg ECX), BinMOp MMov (IndirectScale (Reg EBX) Four (Reg EAX)) (Reg ECX)]
+
+toSymbInstr (SGet n) = [UnMOp MPop (Reg EAX), BinMOp MMov (Reg EBX) (Name n), BinMOp MMov (Reg EAX) (IndirectScale (Reg EBX) Four (Reg EAX)), UnMOp MPush (Reg EAX)]
+toSymbInstr (SPut n) = [UnMOp MPop (Reg EAX), BinMOp MMov (Reg EBX) (Name n), UnMOp MPop (Reg ECX), BinMOp MMov (IndirectScale (Reg EBX) Four (Reg EAX)) (Reg ECX)]
 
 toSymbInstr (SJump label)  = [JmpMOp MJmp (Lbl label)]
 toSymbInstr (SJTrue label) = [UnMOp MPop (Reg EAX), BinMOp MCmp (Reg EAX) (Const 0), JmpMOp MJNE (Lbl label)]
