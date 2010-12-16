@@ -126,11 +126,12 @@ data SInst = SOr | SXor | SAnd | SAdd | SSub | SMul | SDiv | SMod | SLOr | SLAnd
 data MInst = BinMOp BinMInst AsmOp AsmOp
            | UnMOp  UnMInst  AsmOp
            | JmpMOp JmpInst Lbl
+           | Label Lbl
            | NonMOp NonMInst
 
 data BinMInst = MOr | MXor | MAnd | MAdd | MSub | MMul | MLOr | MCmp | MMov -- 2 operand instructions
 data UnMInst  = MDiv | MMod | MNot | MNeg | MInc | MDec | MPush | MPop  -- 1 operand instructions
-data JmpInst  = MJmp | MJGE | MJG | MJLE | MJL | MJE | MJNE | MCall | MLabel
+data JmpInst  = MJmp | MJGE | MJG | MJLE | MJL | MJE | MJNE | MCall 
 data NonMInst = MRet | MLeave | MEnter | MPushA | MPopA 
 
 data AsmOp = Reg Reg
@@ -158,13 +159,15 @@ data Reg = EAX
   deriving (Eq)
 
   
-data Lbl = Lbl String --not a type, as a label is a string, but show lbl = lbl ++ ":"
+data Lbl = Lbl String 
 
 instance Show MInst where
     show (BinMOp o a b) = show o ++ " " ++ show a ++ "," ++ show b --o is not the same type as a & b
     show (UnMOp o a)    = show o ++ " " ++ show a
     show (JmpMOp j l)   = show j ++ " " ++ show l
     show (NonMOp i )    = show i
+    show (Label l  )    = show l ++ ":"
+
 
 instance Show BinMInst where
     show MOr = "or"
@@ -203,7 +206,6 @@ instance Show JmpInst where
     show MJE   = "je"
     show MJNE  = "jne"
     show MCall = "call"
-    show MLabel = ""
 
 instance Show AsmOp where
     show (Reg r)      = show r
@@ -214,7 +216,7 @@ instance Show AsmOp where
     show (DWord a)    = concat ["[", show a, "]"]
 
 instance Show Lbl where
-    show (Lbl s) = s ++ ":"
+    show (Lbl s) = s
 
 instance Show Scale where
     show One = "1"

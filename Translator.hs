@@ -15,10 +15,10 @@ transFunc (Function name t args stats) =
 		popArgs ((name,Number):as)  = (popArgs as) ++ [SPushN name]
 		--popArgs ((name,Array _):as) = (popArgs as) ++ -- TODO: check pointer passing
 
-transStat :: ([Statement],Int) -> ([SInst],Int)
-transStat ([], l) = ([], l)
-transStat (((Declare _ _):ss),l)           = (out,l)
-	where (out,_) = transStat (ss,l)
+transStat :: Statement -> [SInst]
+
+transStat [] = []
+transStat (Declare _ _)           = []
 
 -- FIXME
 transStat (((DeclareArr _ _ _):ss),l)           = (out,l)
@@ -106,3 +106,13 @@ transOp Lt   = [SLt]
 transOp Lte  = [SLte]
 transOp Gt   = [SGt]
 transOp Gte  = [SGte]
+
+counter :: IORef Int
+counter = unsafePerformIO $ newIORef 0
+
+newLabel :: a -> Lbl
+newLabel _ = unsafePerformIO $
+             do
+               i <- readIORef counter
+               writeIORef counter (i+1)
+               return . Lbl $ "L" ++ show i
