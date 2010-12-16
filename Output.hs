@@ -7,6 +7,7 @@ output st fns = zipWith (++) (map outputSymbolTable st) (map outputASM fns)
 
 outputASM :: [MInst] -> [String]
 outputASM is@(i:_) = ["section .text"] ++ ["global "++ show i] ++ map show is ++ ["ret"]
+outputASM [] = []
 
 
 {-
