@@ -36,19 +36,16 @@ options = [ Option ['S','s'] ["semantics"] (NoArg (OutputMade Semantics)) "outpu
             Option ['O','o'] ["out","output"]      (OptArg makeOut "FILE") "output to FILE",
             Option ['F','f'] ["in","input","file"] (OptArg input "FILE")   "input from FILE"
           ]
-
 makeOut :: Maybe String -> Flag
 makeOut = Output . fromMaybe ""
 
 input :: Maybe String -> Flag
 input = Input . fromMaybe ""
 
-
 compile :: String -> IO ()
 compile source =  putStrLn . unlines . concat . output symbolTables . translate  $ program
   where
     (program, symbolTables) = semantics . parse $ alexScanTokens source
-
 
 processFlags :: [Flag] -> IO () -- empty string is stdin / stdout respectively
 processFlags fs = input >>= 
