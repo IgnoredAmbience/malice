@@ -4,6 +4,7 @@ import Parser
 import Semantics
 import Translator
 import Output
+import AbstractOutput
 import System (getArgs)
 import System.Console.GetOpt -- http://leiffrenzel.de/papers/commandline-options-in-haskell.html 
 import Text.Groom
@@ -37,7 +38,7 @@ useUnknowns []     = return ()
 
                
 assemble :: String -> String
-assemble source =  unlines . concat . output symbolTables . translate  $ program
+assemble source =  unlines . concat . output symbolTables . abstract . translate  $ program
   where
     (program, symbolTables) = semantics . parse $ alexScanTokens source
 

@@ -1,14 +1,15 @@
-module Output where
+module Output (output) where
 import Types
 import Data.Map (mapWithKey, elems)
 
-output :: [SymbolTbl] -> [SFn] -> [[String]]
-output st fns = [x++y | (x,y) <- zip (map outputSymbolTable st) (map outputASM fns)]
+output :: [SymbolTbl] -> [[MInst]] -> [[String]]
+output st fns = zipWith (++) (map outputSymbolTable st) (map outputASM fns)
 
-outputASM :: [SInst] -> [String]
-outputASM insts = ["section .text"] ++ ["global "++fname] ++ concatMap toASM insts ++ ["ret"]
-	where (SLabel fname) = head insts
+outputASM :: [MInst] -> [String]
+outputASM is@(i:_) = ["section .text"] ++ ["global "++ show i] ++ map show is ++ ["ret"]
 
+
+{-
 toASM :: SInst -> [String]
 toASM SOr  = ["pop eax"] ++ ["or [esp],eax"]
 toASM SXor = ["pop eax"] ++ ["xor [esp],eax"]
@@ -36,7 +37,7 @@ toASM SInc = ["inc dword [esp]"]
 toASM SDec = ["dec dword [esp]"]
 
 -- TODO
-toASM (SPrintS s) = []
+toASM (SPrintS _) = []
 toASM SPrintI = ["pop eax"]
 
 toASM (SPushI i) = ["mov eax," ++ (show i)] ++ ["push eax"]
@@ -52,6 +53,7 @@ toASM (SJTrue label) = ["pop eax"] ++ ["cmp eax,0"] ++ ["jne "++label]
 toASM (SCall label)  = ["call "++label]
 toASM (SRet)         = ["pop eax"] ++ ["ret"]
 
+-}
 outputSymbolTable :: SymbolTbl -> [String]
 outputSymbolTable st = "section .bss" : elems (mapWithKey symbolToDef st)
 

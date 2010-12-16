@@ -1,8 +1,10 @@
-module Translator where
+module Translator(translate) where
+import System.IO.Unsafe
+import Data.IORef
 import Types
 
 -- Translates statements/expressions/etc into a list of abstract Instructions
-translate :: Program -> [SFn]
+translate :: Program -> [[SInst]]
 translate functions = map transFunc functions
 
 transFunc :: Function -> [SInst]
@@ -15,8 +17,10 @@ transFunc (Function name _ args stats) =
 		popArgs ((name,Number):as)  = (popArgs as) ++ [SPushN name]
 		popArgs ((name,Array _):as) = (popArgs as) ++ [SPushN name] -- TODO: make sure this actually works
 
+
 transStat :: ([Statement],Int) -> ([SInst],Int)
 transStat ([], l) = ([], l)
+
 
 transStat (Declare _ _ :ss,l)              = (out,l)
 	where (out,_) = transStat (ss,l)
@@ -137,6 +141,16 @@ transOp Lte  = [SLte]
 transOp Gt   = [SGt]
 transOp Gte  = [SGte]
 
+counter :: IORef Int
+counter = unsafePerformIO $ newIORef 0
+
+newLabel :: a -> Lbl
+newLabel _ = unsafePerformIO $
+             do
+               i <- readIORef counter
+               writeIORef counter (i+1)
+               return . Lbl $ "L" ++ show i
+
 comparisons = [LOr, LAnd, Eq, Neq, Lt, Lte, Gt, Gte]
 
 transJOp :: BinOp -> String -> SInst
@@ -148,3 +162,4 @@ transJOp Lt   = SJLt
 transJOp Lte  = SJLte
 transJOp Gt   = SJGt
 transJOp Gte  = SJGte
+
