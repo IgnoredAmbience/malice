@@ -45,7 +45,7 @@ assemble source =  unlines {-. concat-} . output dataTbl symbolTables . abstract
     ((program, symbolTables), dataTbl) = semantics . parse $ alexScanTokens source
 
 optimise :: String -> String
-optimise source =  unlines . output dataTbl symbolTables . peephole . abstract . transOptimize symbolTables  . translate  $ program
+optimise source =  unlines . output dataTbl symbolTables . peephole . abstract . transOptimize . translate  $ program
   where
     ((program, symbolTables), dataTbl) = semantics . parse $ alexScanTokens source
 
