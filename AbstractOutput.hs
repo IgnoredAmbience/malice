@@ -50,7 +50,7 @@ toSymbInstr SInc = [UnMOp MInc (DWord (Indirect (Reg ESP)))]
 toSymbInstr SDec = [UnMOp MDec (DWord (Indirect (Reg ESP)))]
 
 -- TODO
-toSymbInstr (SPrintS s) = [BinMOp MMov (Reg ECX) (Name s), BinMOp MMov (Reg EDX) (Name $ lblStrLen s), JmpMOp MCall (Lbl "output_str")]
+toSymbInstr (SPrintS s) = [BinMOp MMov (Reg ECX) (ConstName s), BinMOp MMov (Reg EDX) (ConstName $ lblStrLen s), JmpMOp MCall (Lbl "output_str")]
 toSymbInstr SPrintI = [UnMOp MPop (Reg EAX), JmpMOp MCall (Lbl "output_int")]
 
 toSymbInstr (SPushI i) = [UnMOp MPush (Const i)]

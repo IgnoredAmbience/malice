@@ -143,6 +143,7 @@ data NonMInst = MRet | MLeave | MEnter | MPushA | MPopA -- 0 operand instruction
 data AsmOp = Reg Reg
            | Const Int
            | Name String
+           | ConstName String
            | Indirect AsmOp
            | IndirectScale AsmOp Scale AsmOp
            | DWord AsmOp
@@ -214,12 +215,13 @@ instance Show JmpInst where
     show MCall = "call"
 
 instance Show AsmOp where
-    show (Reg r)      = show r
-    show (Const i)    = show i
-    show (Name  s)    = concat ["[",s,"]"]
-    show (Indirect a) = concat ["[", show a, "]"]
+    show (Reg r)       = show r
+    show (Const i)     = show i
+    show (Name  s)     = concat ["[",s,"]"]
+    show (ConstName s) = s
+    show (Indirect a)  = concat ["[", show a, "]"]
     show (IndirectScale a s b) = concat ["[", show a, " ", show s, "*", show b, "]"]
-    show (DWord a)    = "dword " ++ show a
+    show (DWord a)     = "dword " ++ show a
 
 instance Show Lbl where
     show (Lbl s) = s
