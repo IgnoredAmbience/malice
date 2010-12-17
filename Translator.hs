@@ -10,12 +10,14 @@ translate functions = map transFunc functions
 
 transFunc :: Function -> [SInst]
 transFunc (Function name _ args stats) =
-	[SLabel name] ++ (popArgs args) ++ concatMap transStat stats
+	[SLabel name, SEnter] ++ (getArgs args) ++ [SRestEnter] ++ concatMap transStat stats
 	where
-	  popArgs :: [(String,Type)] -> [SInst]
-          popArgs []                  = []
-          popArgs ((name,Number):as)  = (popArgs as) ++ [SPushN name]
-	  popArgs ((name,Array _):as) = (popArgs as) ++ [SPushN name] -- TODO: make sure this actually works
+	  getArgs :: [(String,Type)] -> [SInst]
+          getArgs []             = []
+          getArgs ((name,_):as)  = (getArgs as) ++ [SPop name]
+
+transFunc (Lambda name _ stats) = [SLabel name, SEnter, SPop "it", SRestEnter] ++ concatMap transStat stats'
+  where stats' = stats ++ [Return (Variable (Var "it"))]
 
 transStat :: Statement -> [SInst]
 transStat (Declare _ _) = []
@@ -28,8 +30,9 @@ transStat (Increment (Var name))           = [SPushN name] ++ [SInc] ++ [SPop na
 transStat (Increment (VarArr name index))  = (transExp index) ++ [SGet name] ++ [SInc] ++ (transExp index) ++ [SPut name]
 transStat (Decrement (Var name))           = [SPushN name] ++ [SDec] ++ [SPop name]
 transStat (Decrement (VarArr name index))  = (transExp index) ++ [SGet name] ++ [SDec] ++ (transExp index) ++ [SPut name]
-transStat (LambdaApply label (Var name))   = [SPushN name] ++ [SCall label]
-transStat (LambdaApply label (VarArr n e)) = (transExp e) ++ [SGet n] ++ [SCall label]
+transStat (LambdaApply label (Var name))   = [SPushN name] ++ [SCall label] ++ [SPop name]
+-- TODO Could de-duplicate transExp?
+transStat (LambdaApply label (VarArr n e)) = (transExp e) ++ [SGet n] ++ [SCall label] ++ (transExp e) ++ [SPut n]
 
 -- FIXME
 transStat (Input (Var name)) = [SInput] ++ [SPop name]

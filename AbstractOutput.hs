@@ -67,6 +67,8 @@ toSymbInstr (SPut n) = [UnMOp MPop (Reg EAX), BinMOp MMov (Reg EBX) (Name n), Un
 toSymbInstr (SJump label)  = [JmpMOp MJmp (Lbl label)]
 toSymbInstr (SJTrue label) = [UnMOp MPop (Reg EAX), BinMOp MCmp (Reg EAX) (Const 0), JmpMOp MJNE (Lbl label)]
 toSymbInstr (SCall label)  = [JmpMOp MCall (Lbl label), UnMOp MPush (Reg EAX)] -- Grab value off eax once the function point has been returned to
+toSymbInstr (SEnter)       = [UnMOp MPop (Reg EBP)]
+toSymbInstr (SRestEnter)   = [UnMOp MPush (Reg EBP)]
 toSymbInstr (SRet)         = [UnMOp MPop (Reg EAX), NonMOp MRet]
 toSymbInstr (SLabel s)     = [Label (Lbl s)]
 
