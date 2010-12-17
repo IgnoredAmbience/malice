@@ -102,7 +102,10 @@ transExp (Variable (Var name))          = [SPushN name]
 transExp (Variable (VarArr name index)) = (transExp index) ++ [SGet name]
 transExp (FunctionCall fn args)         = (concatMap transExp args) ++ [SCall fn]
 transExp (UnOp op exp)                  = (transExp exp) ++ (transUnOp op)
+
+transExp (BinOp (Int i1) (Int i2))      = [SPush (i1+i2)]
 transExp (BinOp op exp1 exp2)           = (transExp exp1) ++ (transExp exp2) ++ (transOp op)
+
 transExp _ = []
 
 transUnOp :: UnOp -> [SInst]
