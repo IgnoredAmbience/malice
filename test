@@ -11,8 +11,6 @@ pass=0
 for ex in ${1%%/}/*.alice; do
   count=$((count+1))
   file=`basename $ex`
-  echo "$file:"
-  echo -n "  Compiling: "
   $tooldir/compile $ex ${ex%%.alice} 2> /dev/null
   echo $? > $tmp/${file%%.alice}.compilation-student
 
@@ -21,36 +19,37 @@ for ex in ${1%%/}/*.alice; do
     if [ "$(cat $tmp/${file%%.alice}.compilation-student)" != "0" ]; then
       pass=$((pass+1))
       compile=$((compile+1))
-      echo "OK (compilation failure expected)"
     else
       # student compiler missed errors
-      echo "FAIL (compilation should not have succeeded)"
+      echo "$file:"
+      echo "  Compiling: FAIL (compilation should not have succeeded)"
+      echo
     fi
   else
     if [ "$(cat $tmp/${file%%.alice}.compilation-student)" != "0" ]; then
-      echo "FAIL (compilation should have succeeded)"
+      echo "$file:"
+      echo "  Compiling: FAIL (compilation should have succeeded)"
+      echo
     else
-      echo "OK"
       compile=$((compile+1))
 
       #for each input data set
       for input in ${ex%%.alice}.*.input; do
         inputf=`basename $input`
-        echo -n "  Testing $input: "
         ${ex%%.alice} > $tmp/${inputf%%.input}.output-student < ${input}
         echo $? > $tmp/${inputf%%.input}.retvalue-student
 
         if cmp --silent ${input%%.input}.retvalue ${tmp}/${inputf%%.input}.retvalue-student && cmp --silent ${input%%.input}.output ${tmp}/${inputf%%.input}.output-student; then
-          echo all good
 
           pass=$((pass+1))
         else
-          echo failed
+          echo "$file:"
+          echo "  Testing $input: failed"
+          echo
         fi
       done
     fi
   fi
-  echo
 done
 
 echo "Autotest results: $pass/$compile/$count passed/compiled/total"
