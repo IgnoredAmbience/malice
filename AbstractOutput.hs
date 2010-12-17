@@ -92,10 +92,10 @@ toSymbInstr (SPushI i) = [UnMOp MPush (Const i)]
 toSymbInstr (SPushN n) = [UnMOp MPush (DWord (Name n))]
 toSymbInstr (SPop n)   = [UnMOp MPop  (DWord (Name n))]
 
-toSymbInstr (SGet n) = [UnMOp MPop (Reg EAX), BinMOp MMov (Reg EBX) (Name n) -- Get the index and name
+toSymbInstr (SGet n) = [UnMOp MPop (Reg EAX), BinMOp MMov (Reg EBX) (ConstName n) -- Get the index and name
                      , BinMOp MMov (Reg EAX) (IndirectScale (Reg EBX) Four (Reg EAX)), UnMOp MPush (Reg EAX)] -- Get the value itself and push it
 
-toSymbInstr (SPut n) = [UnMOp MPop (Reg EAX), BinMOp MMov (Reg EBX) (Name n), UnMOp MPop (Reg ECX) -- Get the value, name and index
+toSymbInstr (SPut n) = [UnMOp MPop (Reg EAX), BinMOp MMov (Reg EBX) (ConstName n), UnMOp MPop (Reg ECX) -- Get the value, name and index
                      , BinMOp MMov (IndirectScale (Reg EBX) Four (Reg EAX)) (Reg ECX)] -- Put the value
 
 toSymbInstr (SJump label)  = [JmpMOp MJmp (Lbl label)]
@@ -106,6 +106,9 @@ toSymbInstr (SEnter)       = [UnMOp MPop (Reg EBP)]
 toSymbInstr (SRestEnter)   = [UnMOp MPush (Reg EBP)]
 toSymbInstr (SRet)         = [UnMOp MPop (Reg EAX), NonMOp MRet]
 toSymbInstr (SLabel s)     = [Label (Lbl s)]
+
+toSymbInstr (SMalloc n) = [UnMOp MPop (Reg EAX), BinMOp MSub (Reg ESP) (Reg EAX), UnMOp MPush (Reg EAX), BinMOp MMov (Name n) (Reg ESP)]
+
 
 instance Show SInst where --moved here from Types.hs to prevent circular dependencies. Cleanest way to do it
     show = intercalate "\n" . map show .toSymbInstr 
