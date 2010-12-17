@@ -89,12 +89,13 @@ transStat (If cond true false ) = ((transExp cond) ++ [SJTrue lblT] ++ [SJump lb
 
 transStat (Comment _ ) = []
 
-transStat _  = error "UNDEFINED STATEMENT"
+transStat x  = error ("UNDEFINED STATEMENT: " ++ show x)
 	
 
 transExp :: Exp -> [SInst]
 transExp (Int i)                        = [SPushI i]
 transExp (Char c)                       = [SPushI (ord c)]
+transExp (Str _)                        = [SPushI 0]
 transExp (Variable (Var name))          = [SPushN name]
 transExp (Variable (VarArr name index)) = (transExp index) ++ [SGet name]
 transExp (UnOp op exp)                  = (transExp exp) ++ (transUnOp op)
@@ -113,7 +114,7 @@ transExp (BinOp LAnd exp1 exp2)         = (transExp exp1) ++ [SJFalse lblF] ++ (
 
 transExp (BinOp op exp1 exp2)           = (transExp exp1) ++ (transExp exp2) ++ (transOp op)
 transExp (FunctionCall label args)      = (concatMap transExp args) ++ [SCall label] ++ [SPushEax]
-transExp _ = error "UNDEFINED EXPRESSION"
+transExp x = error ("UNDEFINED EXPRESSION: " ++ show x)
 
 transUnOp :: UnOp -> [SInst]
 transUnOp Not = [SNot]
