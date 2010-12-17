@@ -98,6 +98,7 @@ transStat (Comment _ ) = []
 
 transExp :: Exp -> [SInst]
 transExp (Int i)                        = [SPushI i]
+transExp (Char c)                       = [SPushI (ord i)]
 transExp (Variable (Var name))          = [SPushN name]
 transExp (Variable (VarArr name index)) = (transExp index) ++ [SGet name]
 transExp (FunctionCall fn args)         = (concatMap transExp args) ++ [SCall fn]
