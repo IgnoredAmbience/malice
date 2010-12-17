@@ -1,41 +1,20 @@
-;; This buffer is for notes you don't want to save, and for Lisp evaluation.
-;; If you want to create a file, visit that file with C-x C-f,
-;; then enter the text in that file's own buffer.
-
-OPTIMISATIONS
-Change push x, pop reg into a mov reg, x
-
 MILESTONE 3 has:
-100 bottles fails on Input (Var name) is undefined
-comparisons fails on SEGFAULT
+Ack                       fails on  segfault
+Array_bounds              fails on  compile
+Bubble_sort               fails on  compile
+callingSimpleFunction     fails on  compile
+complexFunctions          fails on  segfault
+data_types                fails on  compile
+double_fuction            fails on  segfault
+factorial                 fails on  segfault
+fibonnaci                 fails on  segfault
+gcd                       fails on  segfault
+hanoi                     fails on  segfault
+input                     fails on  ?
+looking_glass_array       fails on  compile
+primality                 fails on  segfault
+quicksort                 fails on  compile
+veryLargeLoop             fails on  ?
 
-Ack                       fails on  Input (Var name) is undefined
-conditional               fails on  Input (var name) is undefined
-double_fuction            fails on  Input (var name) is undefined
-factorial                 fails on  Input (var name) is undefined
-fibonnaci                 fails on  Input (var name) is undefined
-gdc                       fails on  Input (var name) is undefined
-hanoi                     fails on  Input (var name) is undefined
-input                     fails on  Input (var name) is undefined
-looking_glass             fails on  Input (var name) is undefined
-many_times                fails on  Input (var name) is undefined
-nested_Strange_Conditions fails on  Input (var name) is undefined
-primality                 fails on  Input (var name) is undefined
-quicksort                 fails on  Input (var name) is undefined
-simpleButNice             fails on  Input (var name) is undefined
-strangeCondition          fails on  Input (var name) is undefined
-veryLargeLoop             fails on  Input (var name) is undefined
 
-data_types                fails on having TODO UNKNOWN in the size of an array
-complexFunctions          fails on having TODO UNKNOWN in the size of an array
-Array_bounds              fails on having TODO UNKNOWN in the size of an array
-Buuble_sort               fails on having TODO UNKNOWN in the size of an array
-callingSimpleFunction     fails on having TODO UNKNOWN in the size of an array
 
-scope fails due to lack of newline output
-
-short circuit fails due LAND and LOR not being lazy
-
-looking_glass_array fails on non exhaustive patterns in Translator (12,0 to 18,61)
-
-Hello_world fails because no code is generated for it
