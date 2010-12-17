@@ -5,6 +5,7 @@ import Semantics
 import Translator
 import Output
 import AbstractOutput
+import Peephole
 import System (getArgs)
 import System.Console.GetOpt -- http://leiffrenzel.de/papers/commandline-options-in-haskell.html 
 import Text.Groom
@@ -20,16 +21,16 @@ main = do
 
 data Flag = Output String | Input String | OutputMade OutputStage
   deriving (Show)
-data OutputStage = Lexer | Parser | Semantics | Translator | Assembler
+data OutputStage = Lexer | Parser | Semantics | Translator | Peephole | Assembler
   deriving (Show, Eq,Ord)
 
 options :: [OptDescr Flag]
-options = [ Option ['S','s'] ["semantics"] (NoArg (OutputMade Semantics)) "output the symbol table",
-            Option ['L','l'] ["lexer"]     (NoArg (OutputMade Lexer)) "output the token list",
-            Option ['P','p'] ["parser"]    (NoArg (OutputMade Parser)) "output the AST",
-            Option ['T','t'] ["translate"] (NoArg (OutputMade Translator)) "output intermediary assembly",
-            Option ['A','a'] ["assembly"]  (NoArg (OutputMade Assembler)) "output the generated assembly",                  
-            Option ['O','o'] ["out","output"]      (ReqArg Output "FILE") "output to FILE",
+options = [ Option ['S','s'] ["semantics"]           (NoArg (OutputMade Semantics)) "output the symbol table", 
+            Option ['L','l'] ["lexer"]               (NoArg (OutputMade Lexer)) "output the token list",
+            Option ['P','p'] ["parser"]              (NoArg (OutputMade Parser)) "output the AST",
+            Option ['T','t'] ["translate"]           (NoArg (OutputMade Translator)) "output intermediary assembly",
+            Option ['A','a'] ["assembly"]            (NoArg (OutputMade Assembler)) "output the generated assembly",
+            Option ['O','o'] ["optimise","optimize"] (NoArg (OutputMade Peephole)) "peephole optimise",
             Option ['F','f'] ["in","input","file"] (ReqArg Input "FILE")   "input from FILE"
           ]
 useUnknowns :: [String] -> IO ()
@@ -38,18 +39,24 @@ useUnknowns []     = return ()
 
                
 assemble :: String -> String
-assemble source =  unlines . concat . output symbolTables . abstract . translate  $ program
+assemble source =  unlines . concat . output dataTbl symbolTables . abstract . translate  $ program
   where
-    (program, symbolTables) = semantics . parse $ alexScanTokens source
+    ((program, symbolTables), dataTbl) = semantics . parse $ alexScanTokens source
+
+peep :: String -> String
+peep source =  unlines . concat . output dataTbl symbolTables . peephole . abstract . translate  $ program
+  where
+    ((program, symbolTables), dataTbl) = semantics . parse $ alexScanTokens source
 
 processFlags :: [Flag] -> IO () -- empty string is stdin / stdout respectively
 processFlags fs = input >>= 
                   case compileStage of
-                      Lexer     -> outputData . groomString . show . alexScanTokens 
-                      Parser    -> outputData . groomString . show . parse . alexScanTokens
-                      Semantics -> outputData . groomString . show . semantics . parse . alexScanTokens
-                      Translator -> outputData . groomString . show . translate . fst . semantics . parse . alexScanTokens
-                      Assembler   -> outputData . assemble
+                      Lexer      -> outputData . groomString . show . alexScanTokens 
+                      Parser     -> outputData . groomString . show . parse . alexScanTokens
+                      Semantics  -> outputData . groomString . show . semantics . parse . alexScanTokens
+                      Translator -> outputData . groomString . show . translate . fst . fst . semantics . parse . alexScanTokens
+                      Peephole   -> outputData . peep
+                      Assembler  -> outputData . assemble
   where
     (compileStage, inFrom, outTo) = foldr processFlagStep (Assembler, "", "") fs
 
@@ -67,3 +74,4 @@ processFlags fs = input >>=
                                     OutputMade s' -> (min s s', i, o)
                                     Input inFile   -> (s, inFile, o)
                                     Output outFile -> (s, i, outFile)
+

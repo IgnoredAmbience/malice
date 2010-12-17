@@ -111,6 +111,7 @@ data UnOp = Not | Neg
 
 -- (Global vars, [Function vars])
 type SymbolTbl = Map String Type
+type DataTbl = Map String String
 
 type SFn = [SInst]
 
@@ -214,7 +215,7 @@ instance Show AsmOp where
     show (Name  s)    = concat ["[",s,"]"]
     show (Indirect a) = concat ["[", show a, "]"]
     show (IndirectScale a s b) = concat ["[", show a, " ", show s, "*", show b, "]"]
-    show (DWord a)    = concat ["[", show a, "]"]
+    show (DWord a)    = "dword " ++ show a
 
 instance Show Lbl where
     show (Lbl s) = s

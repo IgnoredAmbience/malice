@@ -1,6 +1,6 @@
 all: main Library.o
 
-main: main.hs Lexer.hs Parser.hs Semantics.hs Translator.hs Output.hs Types.hs AbstractOutput.hs TranslatorOptimize.hs
+main: main.hs Lexer.hs Parser.hs Semantics.hs Translator.hs Output.hs Types.hs AbstractOutput.hs TranslatorOptimize.hs Peephole.hs
 	ghc --make -W main.hs
 
 Lexer.hs: Lexer.x
