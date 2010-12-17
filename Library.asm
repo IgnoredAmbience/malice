@@ -7,8 +7,8 @@ section .text
 EXIT   equ 1
 WRITE  equ 4
 READ   equ 3
+STDIN  equ 0
 STDOUT equ 1
-STDIN  equ 2
 
 global input_int
 global output_str
