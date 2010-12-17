@@ -9,7 +9,6 @@ outputASM :: [MInst] -> [String]
 outputASM is@(i:_) = ["section .text"] ++ ["global "++ show i] ++ map show is ++ ["ret"]
 outputASM [] = []
 
-
 outputSymbolTable :: SymbolTbl -> [String]
 outputSymbolTable st = "section .bss" : elems (mapWithKey symbolToDef st)
 
@@ -24,4 +23,3 @@ symbolToDef name x = name ++ " TODO UNKNOWN " ++ show x
 
 outputDataTable :: DataTbl -> [String]
 outputDataTable dt = ["section .data"] ++ (map (\(value, hash) -> hash ++ ":\tdb\t`" ++ value ++ "`") $ toList dt)
-
