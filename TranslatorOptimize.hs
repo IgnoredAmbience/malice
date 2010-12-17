@@ -4,7 +4,7 @@ import Types
 import Data.Bits
 
 transOptimize :: [[SInst]] -> [[SInst]]
-transOptimize = map shiftHax.constantFold
+transOptimize = map (shiftHax.constantFold)
 
 constantFold :: [SInst] -> [SInst]
 constantFold input

@@ -145,11 +145,9 @@ newLabel _ = unsafePerformIO $
                writeIORef counter (i+1)
                return . Lbl $ "L" ++ show i
 
-comparisons = [LOr, LAnd, Eq, Neq, Lt, Lte, Gt, Gte]
+comparisons = [Eq, Neq, Lt, Lte, Gt, Gte]
 
 transJOp :: BinOp -> String -> SInst
-transJOp LOr  = SJLOr
-transJOp LAnd = SJLAnd
 transJOp Eq   = SJEq
 transJOp Neq  = SJNeq
 transJOp Lt   = SJLt
