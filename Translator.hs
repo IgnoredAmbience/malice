@@ -32,8 +32,8 @@ transStat (LambdaApply label (Var name))   = [SPushN name] ++ [SCall label]
 transStat (LambdaApply label (VarArr n e)) = (transExp e) ++ [SGet n] ++ [SCall label]
 
 -- FIXME
-transStat (Input (Var name))        = undefined
-transStat (Input (VarArr name exp)) = undefined
+transStat (Input (Var name))        = error "Input (Var name) is undefined"
+transStat (Input (VarArr name exp)) = error "Input (VarArr name exp) is undefined"
 
 -- TODO:
 transStat (Output (Str s)) = ([SPrintS (lblStr s)])
