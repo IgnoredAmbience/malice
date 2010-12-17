@@ -1,6 +1,7 @@
 module Translator(translate) where
 import System.IO.Unsafe
 import Data.IORef
+import Data.Char
 import Types
 
 -- Translates statements/expressions/etc into a list of abstract Instructions
@@ -38,16 +39,19 @@ transStat (Input (VarArr name exp)) = undefined
 transStat (Output (Str s)) = ([SPrintS s])
 transStat (Output exp ) = ((transExp exp) ++ [SPrintI])
 transStat (Return exp ) = ((transExp exp) ++ [SRet])
+
 transStat (LoopUntil cond@(BinOp op lhs rhs) body )
-        | elem op comparisons = ([SLabel lbl] ++ bod ++ (transExp lhs) ++ (transExp rhs) ++ [transJOp op lbl])
+	| elem op comparisons = ([SLabel lbl] ++ bod ++ (transExp lhs) ++ (transExp rhs) ++ [transJOp op lbl])
 	| otherwise           = ([SLabel lbl] ++ bod ++ (transExp cond) ++ [SJTrue lbl])
 	where
 	  (Lbl lbl) = newLabel id
-          bod = concatMap transStat body
+	  bod = concatMap transStat body
+	                       
 transStat (LoopUntil cond body ) = ([SLabel lbl] ++ bod ++ (transExp cond) ++ [SJTrue lbl])
 	where
 	  (Lbl lbl) = newLabel id
-          bod = concatMap transStat body
+	  bod = concatMap transStat body
+
 transStat ((If cond@(BinOp op lhs rhs) true false) )
 	| elem op comparisons = ((transExp lhs) ++ (transExp rhs) ++ [(transJOp op) lblT] ++ [SJump lblF]
 							++ [SLabel lblT] ++ bodT ++ [SJump lblE]
@@ -80,11 +84,15 @@ transStat _  = error "UNDEFINED STATEMENT"
 
 transExp :: Exp -> [SInst]
 transExp (Int i)                        = [SPushI i]
+transExp (Char c)                       = [SPushI (ord c)]
 transExp (Variable (Var name))          = [SPushN name]
 transExp (Variable (VarArr name index)) = (transExp index) ++ [SGet name]
 transExp (FunctionCall fn args)         = (concatMap transExp args) ++ [SCall fn]
 transExp (UnOp op exp)                  = (transExp exp) ++ (transUnOp op)
+
+--transExp (BinOp op (Int i1) (Int i2))   = [SPushI (i1i2)]
 transExp (BinOp op exp1 exp2)           = (transExp exp1) ++ (transExp exp2) ++ (transOp op)
+
 transExp _ = []
 
 transUnOp :: UnOp -> [SInst]
@@ -130,4 +138,3 @@ transJOp Lt   = SJLt
 transJOp Lte  = SJLte
 transJOp Gt   = SJGt
 transJOp Gte  = SJGte
-

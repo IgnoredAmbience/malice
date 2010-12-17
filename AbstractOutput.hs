@@ -18,8 +18,6 @@ toSymbInstr SDiv = [UnMOp MPop (Reg EBX), UnMOp MPop (Reg EAX), BinMOp MXor (Reg
 toSymbInstr SMod = [UnMOp MPop (Reg EBX), UnMOp MPop (Reg EAX), BinMOp MXor (Reg EDX) (Reg EDX), UnMOp MDiv (Reg EBX), UnMOp MPush (Reg EDX)]
 
 
--- TODO:
--- IDEAS: Make labels by hashing a seed (eg, unix time at that point of compilation) with a salt, to help ensure the labels can't overlap
 toSymbInstr SLOr  = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EAX) (Reg EBX)] -- EAX || EBX
 toSymbInstr SLAnd = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX)] -- EAX && EBX
 toSymbInstr SEq   = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EAX) (Reg EBX),JmpMOp MJE label,BinMOp MMov (Reg EAX) (Const 0), UnMOp MPush (Reg EAX), Label label, BinMOp MMov (Reg EAX) (Const 1), UnMOp MPush (Reg EAX)] -- EAX == EBX
@@ -53,18 +51,21 @@ toSymbInstr SDec = [UnMOp MDec (DWord (Indirect (Reg ESP)))]
 
 -- TODO
 toSymbInstr (SPrintS _) = []
-toSymbInstr SPrintI = [UnMOp MPop (Reg EAX)]
+toSymbInstr SPrintI = [UnMOp MPop (Reg EAX), JmpMOp MCall (Lbl "output_int")]
 
-toSymbInstr (SPushI i) = [BinMOp MMov (Reg EAX) (Const i), UnMOp MPush (Reg EAX)]
-toSymbInstr (SPushN n) = [BinMOp MMov (Reg EAX) (Name n) , UnMOp MPush (Reg EAX)]
-toSymbInstr (SPop n) = [UnMOp MPop (Reg EAX), BinMOp MMov (Name n) (Reg EAX)]
--- TODO: Change these to index from 1 with bounds checking. Also, figure out how/when to get the bound into the array first...
-toSymbInstr (SGet n) = [UnMOp MPop (Reg EAX), UnMOp MDec (Reg EAX), BinMOp MMov (Reg EBX) (Name n), BinMOp MMov (Reg EAX) (IndirectScale (Reg EBX) Four (Reg EAX)), UnMOp MPush (Reg EAX)]
-toSymbInstr (SPut n) = [UnMOp MPop (Reg EAX), UnMOp MDec (Reg EAX), BinMOp MMov (Reg EBX) (Name n), UnMOp MPop (Reg ECX), BinMOp MMov (IndirectScale (Reg EBX) Four (Reg EAX)) (Reg ECX)]
+toSymbInstr (SPushI i) = [UnMOp MPush (Const i)]
+toSymbInstr (SPushN n) = [UnMOp MPush (Name n)]
+toSymbInstr (SPop n) = [UnMOp MPop (Name n)]
+
+toSymbInstr (SGet n) = [UnMOp MPop (Reg EAX), BinMOp MMov (Reg EBX) (Name n) -- Get the index and name
+                     , BinMOp MMov (Reg EAX) (IndirectScale (Reg EBX) Four (Reg EAX)), UnMOp MPush (Reg EAX)] -- Get the value itself and push it
+
+toSymbInstr (SPut n) = [UnMOp MPop (Reg EAX), BinMOp MMov (Reg EBX) (Name n), UnMOp MPop (Reg ECX) -- Get the value, name and index
+                     , BinMOp MMov (IndirectScale (Reg EBX) Four (Reg EAX)) (Reg ECX)] -- Put the value
 
 toSymbInstr (SJump label)  = [JmpMOp MJmp (Lbl label)]
 toSymbInstr (SJTrue label) = [UnMOp MPop (Reg EAX), BinMOp MCmp (Reg EAX) (Const 0), JmpMOp MJNE (Lbl label)]
-toSymbInstr (SCall label)  = [JmpMOp MCall (Lbl label)]
+toSymbInstr (SCall label)  = [JmpMOp MCall (Lbl label), UnMOp MPush (Reg EAX)] -- Grab value off eax once the function point has been returned to
 toSymbInstr (SRet)         = [UnMOp MPop (Reg EAX), NonMOp MRet]
 toSymbInstr (SLabel s)     = [Label (Lbl s)]
 
