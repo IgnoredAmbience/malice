@@ -9,7 +9,7 @@ output dt st fns = (outputDataTable dt) ++ ["section .bss"] ++ (concatMap output
                    ++ ["section .text", "extern output_int", "extern output_str", "extern input_int", "global main"] ++ (concatMap outputASM fns)
 
 outputASM :: [MInst] -> [String]
-outputASM is = map show (is ++ [UnMOp MPop (Reg EAX), BinMOp MXor (Reg EAX) (Reg EAX), NonMOp MRet]) ++ [""]
+outputASM is = map show (is ++ [BinMOp MXor (Reg EAX) (Reg EAX), NonMOp MRet]) ++ [""]
 outputASM [] = []
 
 outputSymbolTable :: SymbolTbl -> [String]
