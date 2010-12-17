@@ -1,5 +1,6 @@
 module Types where
 import Data.Map (Map)
+import Data.HashTable (hashString)
 
 data Token = TokDot
            | TokComma
@@ -112,6 +113,9 @@ data UnOp = Not | Neg
 -- (Global vars, [Function vars])
 type SymbolTbl = Map String Type
 type DataTbl = Map String String
+
+lblStr s = "str" ++ show(abs$hashString s)
+lblStrLen h = "len" ++ h
 
 type SFn = [SInst]
 

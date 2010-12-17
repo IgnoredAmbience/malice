@@ -1,7 +1,6 @@
 module Semantics(semantics) where
 import Types
 import qualified Data.Map as Map
-import Data.HashTable (hashString)
 import Data.List (mapAccumL)
 
 type Rewrite = Map.Map String String
@@ -230,8 +229,6 @@ typeOf :: SymbolTbl -> Variable -> Type
 typeOf st (Var x)      = Map.findWithDefault (undefinedError x) x st
 typeOf st (VarArr x _) = t
   where Array t = Map.findWithDefault (undefinedError x) x st
-
-lblStr s = "str" ++ show(abs$hashString s)
 
 -- Error messages
 semError = error . (++) "Semantic error: " 

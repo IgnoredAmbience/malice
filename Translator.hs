@@ -37,7 +37,7 @@ transStat (Input (Var name))        = undefined
 transStat (Input (VarArr name exp)) = undefined
 
 -- TODO:
-transStat (Output (Str s)) = ([SPrintS s])
+transStat (Output (Str s)) = ([SPrintS (lblStr s)])
 transStat (Output exp ) = ((transExp exp) ++ [SPrintI])
 transStat (Return exp ) = ((transExp exp) ++ [SRet])
 transStat (LoopUntil cond@(BinOp op lhs rhs) body )
