@@ -45,9 +45,7 @@ for ex in ${1%%/}/*.alice; do
 
           pass=$((pass+1))
         else
-          echo failed, diff follows:
-          diff -u ${input%%.input}.retvalue ${tmp}/${inputf%%.input}.retvalue-student
-          diff -u ${input%%.input}.output ${tmp}/${inputf%%.input}.output-student
+          echo failed
         fi
       done
     fi
