@@ -70,12 +70,12 @@ toSymbInstr SGte = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg
         lblE = (Lbl (lbl++"_end"))
 
 
-toSymbInstr (SJEq  label) = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EAX) (Reg EBX), JmpMOp MJE  (Lbl label)]
-toSymbInstr (SJNeq label) = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EAX) (Reg EBX), JmpMOp MJNE (Lbl label)]
-toSymbInstr (SJLt  label) = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EAX) (Reg EBX), JmpMOp MJL  (Lbl label)]
-toSymbInstr (SJLte label) = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EAX) (Reg EBX), JmpMOp MJLE (Lbl label)]
-toSymbInstr (SJGt  label) = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EAX) (Reg EBX), JmpMOp MJG  (Lbl label)]
-toSymbInstr (SJGte label) = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EAX) (Reg EBX), JmpMOp MJGE (Lbl label)]
+toSymbInstr (SJEq  label) = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EBX) (Reg EAX), JmpMOp MJE  (Lbl label)]
+toSymbInstr (SJNeq label) = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EBX) (Reg EAX), JmpMOp MJNE (Lbl label)]
+toSymbInstr (SJLt  label) = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EBX) (Reg EAX), JmpMOp MJL  (Lbl label)]
+toSymbInstr (SJLte label) = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EBX) (Reg EAX), JmpMOp MJLE (Lbl label)]
+toSymbInstr (SJGt  label) = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EBX) (Reg EAX), JmpMOp MJG  (Lbl label)]
+toSymbInstr (SJGte label) = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EBX) (Reg EAX), JmpMOp MJGE (Lbl label)]
 
 
 toSymbInstr SNot = [UnMOp MNot (DWord (Indirect (Reg ESP)))]
