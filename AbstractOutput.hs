@@ -104,6 +104,7 @@ toSymbInstr (SJFalse label) = [UnMOp MPop (Reg EAX), BinMOp MCmp (Reg EAX) (Cons
 toSymbInstr (SCall label)  = [JmpMOp MCall (Lbl label), UnMOp MPush (Reg EAX)] -- Grab value off eax once the function point has been returned to
 toSymbInstr (SEnter)       = [UnMOp MPop (Reg EBP)]
 toSymbInstr (SRestEnter)   = [UnMOp MPush (Reg EBP)]
+toSymbInstr (SPushEax)     = [UnMOp MPush (Reg EAX)]
 toSymbInstr (SRet)         = [UnMOp MPop (Reg EAX), NonMOp MRet]
 toSymbInstr (SLabel s)     = [Label (Lbl s)]
 

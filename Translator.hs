@@ -112,8 +112,8 @@ transExp (BinOp LAnd exp1 exp2)         = (transExp exp1) ++ [SJFalse lblF] ++ (
         lblE = lbl++"_end"
 
 transExp (BinOp op exp1 exp2)           = (transExp exp1) ++ (transExp exp2) ++ (transOp op)
-
-transExp _ = []
+transExp (FunctionCall label args)      = (concatMap transExp args) ++ [SCall label] ++ [SPushEax]
+transExp _ = error "UNDEFINED EXPRESSION"
 
 transUnOp :: UnOp -> [SInst]
 transUnOp Not = [SNot]
