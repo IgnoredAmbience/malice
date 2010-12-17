@@ -17,8 +17,8 @@ toSymbInstr SMul = [UnMOp MPop (Reg EAX), BinMOp MMul (Reg EAX) (Indirect (Reg E
 toSymbInstr SDiv = [UnMOp MPop (Reg EBX), UnMOp MPop (Reg EAX), BinMOp MXor (Reg EDX) (Reg EDX), UnMOp MDiv (Reg EBX), UnMOp MPush (Reg EAX)]
 toSymbInstr SMod = [UnMOp MPop (Reg EBX), UnMOp MPop (Reg EAX), BinMOp MXor (Reg EDX) (Reg EDX), UnMOp MDiv (Reg EBX), UnMOp MPush (Reg EDX)]
 
-toSymbInstr (SShiftL i) = [BinMOp MShl (Indirect (Reg ESP)) (Const i)]
-toSymbInstr (SShiftR i) = [BinMOp MShr (Indirect (Reg ESP)) (Const i)]
+toSymbInstr (SShiftL i) = [BinMOp MShl (DWord (Indirect (Reg ESP))) (Const i)]
+toSymbInstr (SShiftR i) = [BinMOp MShr (DWord (Indirect (Reg ESP))) (Const i)]
 
 
 toSymbInstr SEq = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EBX) (Reg EAX)
@@ -101,9 +101,10 @@ toSymbInstr (SPut n) = [UnMOp MPop (Reg EAX), BinMOp MMov (Reg EBX) (ConstName n
 toSymbInstr (SJump label)  = [JmpMOp MJmp (Lbl label)]
 toSymbInstr (SJTrue label) = [UnMOp MPop (Reg EAX), BinMOp MCmp (Reg EAX) (Const 0), JmpMOp MJNE (Lbl label)]
 toSymbInstr (SJFalse label) = [UnMOp MPop (Reg EAX), BinMOp MCmp (Reg EAX) (Const 0), JmpMOp MJE (Lbl label)]
-toSymbInstr (SCall label)  = [JmpMOp MCall (Lbl label), UnMOp MPush (Reg EAX)] -- Grab value off eax once the function point has been returned to
+toSymbInstr (SCall label)  = [JmpMOp MCall (Lbl label)] -- Grab value off eax once the function point has been returned to
 toSymbInstr (SEnter)       = [UnMOp MPop (Reg EBP)]
 toSymbInstr (SRestEnter)   = [UnMOp MPush (Reg EBP)]
+toSymbInstr (SPushEax)     = [UnMOp MPush (Reg EAX)]
 toSymbInstr (SRet)         = [UnMOp MPop (Reg EAX), NonMOp MRet]
 toSymbInstr (SLabel s)     = [Label (Lbl s)]
 
