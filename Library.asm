@@ -2,6 +2,13 @@ section .data
 
 buf db 80
 
+err1 db `Oh no! You wanted their `
+len1 equ $-err1
+err2 db ` piece, but they only had `
+len2 equ $-err2
+err3 db `.\n`
+len3 equ $-err3
+
 section .text
 
 EXIT   equ 1
@@ -13,6 +20,7 @@ STDOUT equ 1
 global input_int
 global output_str
 global output_int
+global bounds_check
 global _start
 extern main
 
@@ -127,3 +135,31 @@ output_int:
 	; move the string to ecx, and the length to edx for printing
 	mov ecx,buf
 	jmp output_str
+
+
+bounds_check:
+    mov ecx,[ebx]
+    cmp eax,ecx
+    jg bounds_check_fail
+    ret
+
+bounds_check_fail:
+    push ecx
+    push eax
+    mov ecx,err1
+    mov edx,len1
+    call output_str
+    pop eax
+    call output_int
+    mov ecx,err2
+    mov edx,len2
+    call output_str
+    pop eax
+    call output_int
+    mov ecx,err3
+    mov edx,len3
+    call output_str
+
+    mov ebx,1       ; tell the OS how much of a fail the MAlice program was
+    mov eax,EXIT
+    int 80H
