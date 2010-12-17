@@ -126,6 +126,7 @@ data SInst = SOr | SXor | SAnd | SAdd | SSub | SMul | SDiv | SMod | SEq | SNeq |
 		   | SJEq String | SJNeq String | SJLt String | SJLte String | SJGt String | SJGte String
 		   | SPrintI | SPrintS String | SInput -- Output/Input
            | SShiftL Int | SShiftR Int -- For multiplication/division hacks
+           | SMalloc String
   deriving (Eq)
 
 
@@ -187,8 +188,8 @@ instance Show BinMInst where
     show MLOr = "or"
     show MCmp = "cmp"
     show MMov = "mov"
-    show MShl = "shl"
-    show MShr = "shr"
+    show MShl = "sal"
+    show MShr = "sar"
 
 instance Show UnMInst where
     show MNot = "not"
@@ -223,7 +224,7 @@ instance Show AsmOp where
     show (Name  s)     = concat ["[",s,"]"]
     show (ConstName s) = s
     show (Indirect a)  = concat ["[", show a, "]"]
-    show (IndirectScale a s b) = concat ["[", show a, " ", show s, "*", show b, "]"]
+    show (IndirectScale a s b) = concat ["[", show a, "+", show s, "*", show b, "]"]
     show (DWord a)     = "dword " ++ show a
 
 instance Show Lbl where

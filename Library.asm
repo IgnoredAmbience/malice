@@ -32,9 +32,15 @@ input_int:
 	xor edi,edi
 	xor eax,eax 	; result
 	mov ebx,10		; imul is silly
-
 	xor ecx,ecx
-	ii_1:
+
+    mov cl,[buf]
+    cmp ecx,45
+    jne ii_1_pos
+    inc edi
+    jmp ii_1_neg
+
+	ii_1_pos:
 		mov cl,[buf + edi] ; move the next char into ecx
 		cmp ecx,48		; is it less than '0', if so exit
 		jl exit
@@ -44,7 +50,19 @@ input_int:
 		sub ecx,48		; convert the ascii number to an actual one
 		add eax,ecx		; add it to the result register
 		inc edi			; move to next char
-		jmp ii_1
+		jmp ii_1_pos
+
+	ii_1_neg:
+		mov cl,[buf + edi] ; move the next char into ecx
+		cmp ecx,48		; is it less than '0', if so exit
+		jl exit
+		cmp ecx,57		; is it more than '9', if so exit
+		jg exit
+		imul eax,ebx	; multiply the current result by 10
+		sub ecx,48		; convert the ascii number to an actual one
+		sub eax,ecx		; subtract it from the result register
+		inc edi			; move to next char
+		jmp ii_1_neg
 
 	exit:
 		ret
@@ -70,6 +88,16 @@ output_str:
 output_int:
 	xor edi,edi ; set counter to 0
 	mov ebx,10 ; set the divisor to 10
+	xor esi,esi
+
+    test eax,eax
+    jns oi_1
+    mov byte [buf],'-'
+    inc edi
+    not eax
+    inc eax
+    inc esi
+    jmp oi_1
 
 	oi_1:
 		; input comes into eax
@@ -85,7 +113,6 @@ output_int:
 	mov edx,edi	; save the string length
 	mov byte [buf + edx],0 ; terminate the string
 	dec edi
-	xor esi,esi
 
 	oi_2:
 		mov al,[buf + esi] ; swap the edi'th and esi'th bytes

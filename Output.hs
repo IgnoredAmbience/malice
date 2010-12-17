@@ -20,6 +20,7 @@ symbolToDef name Number = name ++ ":\tresd\t1"
 symbolToDef name Letter = name ++ ":\tresb\t1"
 symbolToDef _ (FunctionType _ _) = ""
 symbolToDef _ (LambdaType _) = ""
+symbolToDef name (Array _) = name ++ ":\tresd\t1000"
 symbolToDef name x = name ++ " TODO UNKNOWN " ++ show x
 
 outputDataTable :: DataTbl -> [String]
