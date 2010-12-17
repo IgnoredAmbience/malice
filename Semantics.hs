@@ -6,11 +6,20 @@ import Data.List (mapAccumL)
 type Rewrite = Map.Map String String
 
 semantics :: Program -> ((Program, [SymbolTbl]), DataTbl)
-semantics funcs
-  = (unzip fps, dt)
+semantics funcs = (unzip fps', dt)
     where
       funcTbl = foldl addFunction Map.empty funcs
       (dt, fps) = mapAccumL (buildFunctionSymbolTbl funcTbl) Map.empty funcs
+      fps' = map f fps
+
+      f :: (Function, SymbolTbl) -> (Function, SymbolTbl)
+      f (Function n t params sts, st) = (Function n t params' (map (renameStVars (renameV n)) sts), Map.mapKeys (renameF n) st)
+        where params' = map (\(p, t) -> (renameF n p, t)) params
+      f (Lambda n t sts, st) = (Lambda n t (map (renameStVars (renameV n)) sts), Map.mapKeys (renameF n) st)
+
+      renameF fn pn = fn ++ "_" ++ pn
+      renameV fn (Var v) = Var (renameF fn v)
+      renameV fn (VarArr v exp) = VarArr (renameF fn v) (renameExpVars (renameV fn) exp)
 
 -- Add function definitions into (global) symbol table
 addFunction :: SymbolTbl -> Function -> SymbolTbl
@@ -70,14 +79,14 @@ addStatement _ (ss,st,rt,dt) (Assign var exp)
   | castable vt et = (ss++[Assign var' exp'], st, rt, dt')
   | otherwise      = semError $ "cannot assign expression of type " ++ show et ++ " to variable " ++ show var ++ " of type " ++ show vt
   where
-    exp' = renameExpVars rt exp
+    exp' = renameExpVars (renameVar rt) exp
     var' = renameVar rt var
     vt = typeOf st var'
     (et, dt') = semanticExp (st, dt) exp'
 
 addStatement _ (ss,st,rt,dt) (Call exp) = (ss++[Call exp'], st, rt, dt')
   where
-    exp' = renameExpVars rt exp
+    exp' = renameExpVars (renameVar rt) exp
     (_, dt') = semanticExp (st, dt) exp'
 
 addStatement _ (ss,st,rt,dt) (Increment var)
@@ -110,34 +119,28 @@ addStatement _ (ss,st,rt,dt) (Output exp)
   | isPrintable t = (ss++[Output exp'], st, rt, dt')
   | otherwise     = semError $ show exp ++ " is not printable."
     where
-      exp'     = renameExpVars rt exp
+      exp'     = renameExpVars (renameVar rt) exp
       (t, dt') = semanticExp (st, dt) exp'
 
 addStatement _ (ss,st,rt,dt) (Return exp) = (ss++[Return exp'], st, rt, dt')
   where
-    exp'     = renameExpVars rt exp
+    exp'     = renameExpVars (renameVar rt) exp
     (_, dt') = semanticExp (st, dt) exp'
 
 addStatement d (ss,st,rt,dt) (LoopUntil exp sts) = (ss++[LoopUntil exp' loopStats], st'', rt, dt'')
   where
     (loopStats, st'', _, dt'') = stmtsSmbTbl (d+1) ([], st, rt, dt') sts
-    exp'      = renameExpVars rt exp
+    exp'      = renameExpVars (renameVar rt) exp
     (_, dt')  = semanticExp (st, dt) exp'
 
 addStatement d (ss,st,rt,dt) (If exp thenSts elseSts) = (ss++[If exp' thenSts' elseSts'], st''', rt, dt''')
   where
-    exp'      = renameExpVars rt exp
+    exp'      = renameExpVars (renameVar rt) exp
     (_, dt')  = semanticExp (st, dt) exp'
     (thenSts', st'', _, dt'') = stmtsSmbTbl (d+1) ([], st, rt, dt') thenSts
     (elseSts', st''', _, dt''') = stmtsSmbTbl (d+1) ([], st'', rt, dt'') elseSts
 
 addStatement _ st (Comment _) = st
-
---expType :: (SymbolTbl, DataTbl) -> Exp -> Type
---expType st = fst . semanticExp st
---
---checkExp :: SymbolTbl -> Exp -> SymbolTbl
---checkExp st = snd . semanticExp st
 
 semanticExp :: (SymbolTbl, DataTbl) -> Exp -> (Type, DataTbl)
 semanticExp (st,dt) (Int _)  = (Number, dt)
@@ -168,23 +171,42 @@ semanticExp (st,dt) (FunctionCall name params)
     FunctionType t expParamTypes = Map.findWithDefault (undefinedFuncError name) name st
     comparedTypes = zipWith castable paramTypes expParamTypes
 
+
+-- Variable renaming
+renameStVars :: (Variable -> Variable) -> Statement -> Statement
+renameStVars rf (Declare n t)        = Declare (name.rf$Var n) t
+renameStVars rf (DeclareArr n t exp) = DeclareArr (name.rf$VarArr n (Int 0)) t (renameExpVars rf exp)
+renameStVars rf (Assign v exp)       = Assign (rf v) (renameExpVars rf exp)
+renameStVars rf (Call exp)           = Call (renameExpVars rf exp)
+renameStVars rf (Increment v)        = Increment (rf v)
+renameStVars rf (Decrement v)        = Decrement (rf v)
+renameStVars rf (LambdaApply n v)    = LambdaApply n (rf v)
+renameStVars rf (Input v)            = Input (rf v)
+renameStVars rf (Output exp)         = Output (renameExpVars rf exp)
+renameStVars rf (Return exp)         = Return (renameExpVars rf exp)
+renameStVars rf (LoopUntil exp ss)   = LoopUntil (renameExpVars rf exp) (map (renameStVars rf) ss)
+renameStVars rf (If exp ss1 ss2)     = If (renameExpVars rf exp) (map (renameStVars rf) ss1) (map (renameStVars rf) ss2)
+renameStVars _ x                     = x
+
+
+renameExpVars :: (Variable -> Variable) -> Exp -> Exp
+renameExpVars rf (UnOp o x)          = UnOp o (renameExpVars rf x)
+renameExpVars rf (BinOp o x1 x2)     = BinOp o (renameExpVars rf x1) (renameExpVars rf x2)
+renameExpVars rf (FunctionCall n xs) = FunctionCall n (map (renameExpVars rf) xs)
+renameExpVars rf (Variable v)        = Variable (rf v)
+renameExpVars _ x                    = x
+
+renameVar :: Rewrite -> Variable -> Variable
+renameVar rt (Var n)      = Var (Map.findWithDefault n n rt)
+renameVar rt (VarArr n x) = VarArr (Map.findWithDefault n n rt) (renameExpVars (renameVar rt) x)
+
+
 checkParamTypes :: [Exp] -> SymbolTbl -> DataTbl -> ([Type], DataTbl)
 checkParamTypes [] _ d = ([], d)
 checkParamTypes (e:es) s d = (t:ts, d'')
   where
     (ts, d'') = checkParamTypes es s d'
     (t, d')   = semanticExp (s, d) e
-
-renameExpVars :: Rewrite -> Exp -> Exp
-renameExpVars rt (UnOp o x)          = UnOp o (renameExpVars rt x)
-renameExpVars rt (BinOp o x1 x2)     = BinOp o (renameExpVars rt x1) (renameExpVars rt x2)
-renameExpVars rt (FunctionCall n xs) = FunctionCall n (map (renameExpVars rt) xs)
-renameExpVars rt (Variable v)        = Variable (renameVar rt v)
-renameExpVars _ x                    = x
-
-renameVar :: Rewrite -> Variable -> Variable
-renameVar rt (Var n)      = Var (Map.findWithDefault n n rt)
-renameVar rt (VarArr n x) = VarArr (Map.findWithDefault n n rt) (renameExpVars rt x)
 
 -- Axioms
 isPrintable :: Type -> Bool

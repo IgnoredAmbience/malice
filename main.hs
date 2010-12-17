@@ -7,6 +7,7 @@ import Output
 import AbstractOutput
 import Peephole
 import TranslatorOptimize
+import StatementOptimise
 import System (getArgs)
 import System.Console.GetOpt -- http://leiffrenzel.de/papers/commandline-options-in-haskell.html 
 import Text.Groom
@@ -40,12 +41,12 @@ useUnknowns []     = return ()
 
                
 assemble :: String -> String
-assemble source =  unlines . concat . output dataTbl symbolTables . abstract . translate  $ program
+assemble source =  unlines .  output dataTbl symbolTables . abstract . translate  $ program
   where
     ((program, symbolTables), dataTbl) = semantics . parse $ alexScanTokens source
 
 optimise :: String -> String
-optimise source =  unlines . concat . output dataTbl symbolTables . peephole . abstract . transOptimize symbolTables  . translate  $ program
+optimise source =  unlines .  output dataTbl symbolTables . peephole . abstract . transOptimize . translate $ program
   where
     ((program, symbolTables), dataTbl) = semantics . parse $ alexScanTokens source
 

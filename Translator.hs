@@ -10,12 +10,14 @@ translate functions = map transFunc functions
 
 transFunc :: Function -> [SInst]
 transFunc (Function name _ args stats) =
-	[SLabel name] ++ (popArgs args) ++ concatMap transStat stats
+	[SLabel name, SEnter] ++ (getArgs args) ++ [SRestEnter] ++ concatMap transStat stats
 	where
-	  popArgs :: [(String,Type)] -> [SInst]
-          popArgs []                  = []
-          popArgs ((name,Number):as)  = (popArgs as) ++ [SPushN name]
-	  popArgs ((name,Array _):as) = (popArgs as) ++ [SPushN name] -- TODO: make sure this actually works
+	  getArgs :: [(String,Type)] -> [SInst]
+          getArgs []             = []
+          getArgs ((name,_):as)  = (getArgs as) ++ [SPop name]
+
+transFunc (Lambda name _ stats) = [SLabel name, SEnter, SPop $ name ++ "_it", SRestEnter] ++ concatMap transStat stats'
+  where stats' = stats ++ [Return (Variable (Var $ name ++ "_it"))]
 
 
 transStat :: Statement -> [SInst]
@@ -29,13 +31,11 @@ transStat (Increment (Var name))           = [SPushN name] ++ [SInc] ++ [SPop na
 transStat (Increment (VarArr name index))  = (transExp index) ++ [SGet name] ++ [SInc] ++ (transExp index) ++ [SPut name]
 transStat (Decrement (Var name))           = [SPushN name] ++ [SDec] ++ [SPop name]
 transStat (Decrement (VarArr name index))  = (transExp index) ++ [SGet name] ++ [SDec] ++ (transExp index) ++ [SPut name]
-transStat (LambdaApply label (Var name))   = [SPushN name] ++ [SCall label]
-transStat (LambdaApply label (VarArr n e)) = (transExp e) ++ [SGet n] ++ [SCall label]
+transStat (LambdaApply label (Var name))   = [SPushN name] ++ [SCall label] ++ [SPop name]
+-- TODO Could de-duplicate transExp?
+transStat (LambdaApply label (VarArr n e)) = (transExp e) ++ [SGet n] ++ [SCall label] ++ (transExp e) ++ [SPut n]
 
 -- FIXME
-transStat (Input (Var name))        = error "Input (Var name) is undefined"
-transStat (Input (VarArr name exp)) = error "Input (VarArr name exp) is undefined"
-
 transStat (Input (Var name)) = [SInput] ++ [SPop name]
 transStat (Input (VarArr name index)) = [SInput] ++ (transExp index) ++ [SPut name]
 
@@ -45,15 +45,19 @@ transStat (Output exp ) = ((transExp exp) ++ [SPrintI])
 transStat (Return exp ) = ((transExp exp) ++ [SRet])
 
 transStat (LoopUntil cond@(BinOp op lhs rhs) body )
-	| elem op comparisons = ([SLabel lbl] ++ bod ++ (transExp lhs) ++ (transExp rhs) ++ [transJOp op lbl])
-	| otherwise           = ([SLabel lbl] ++ bod ++ (transExp cond) ++ [SJTrue lbl])
+	| elem op comparisons = ([SLabel lblL] ++ (transExp lhs) ++ (transExp rhs) ++ [(transJOp op) lblE] ++ bod ++ [SJump lblL] ++ [SLabel lblE])
+	| otherwise           = ([SLabel lblL] ++ [SJTrue lblE] ++ bod ++ (transExp cond) ++ [SJump lblL] ++ [SLabel lblE])
 	where
 	  (Lbl lbl) = newLabel id
+	  lblL = lbl++"_loop"
+	  lblE = lbl++"_end"
 	  bod = concatMap transStat body
 	                       
-transStat (LoopUntil cond body ) = ([SLabel lbl] ++ bod ++ (transExp cond) ++ [SJTrue lbl])
+transStat (LoopUntil cond body ) = ([SLabel lblL] ++ [SJTrue lblE] ++ bod ++ (transExp cond) ++ [SJump lblL] ++ [SLabel lblE])
 	where
 	  (Lbl lbl) = newLabel id
+	  lblL = lbl++"_loop"
+	  lblE = lbl++"_end"
 	  bod = concatMap transStat body
 
 transStat ((If cond@(BinOp op lhs rhs) true false) )
@@ -93,8 +97,20 @@ transExp (Int i)                        = [SPushI i]
 transExp (Char c)                       = [SPushI (ord c)]
 transExp (Variable (Var name))          = [SPushN name]
 transExp (Variable (VarArr name index)) = (transExp index) ++ [SGet name]
-transExp (FunctionCall fn args)         = (concatMap transExp args) ++ [SCall fn]
 transExp (UnOp op exp)                  = (transExp exp) ++ (transUnOp op)
+
+-- Short circuit operators have a distinct lack of Jonny 5
+transExp (BinOp LOr exp1 exp2)          = (transExp exp1) ++ [SJTrue lblT] ++ (transExp exp2) ++ [SJTrue lblT] ++ [SPushI 0] ++ [SJump lblE] ++ [SLabel lblT] ++ [SPushI 1] ++ [SLabel lblE]
+    where
+        (Lbl lbl) = newLabel id
+        lblT = lbl++"_true"
+        lblE = lbl++"_end"
+transExp (BinOp LAnd exp1 exp2)         = (transExp exp1) ++ [SJFalse lblF] ++ (transExp exp2) ++ [SJFalse lblF] ++ [SPushI 1] ++ [SJump lblE] ++ [SLabel lblF] ++ [SPushI 0] ++ [SLabel lblE]
+    where
+        (Lbl lbl) = newLabel id
+        lblF = lbl++"_false"
+        lblE = lbl++"_end"
+
 transExp (BinOp op exp1 exp2)           = (transExp exp1) ++ (transExp exp2) ++ (transOp op)
 
 transExp _ = []
@@ -112,8 +128,6 @@ transOp Sub  = [SSub]
 transOp Mul  = [SMul]
 transOp Div  = [SDiv]
 transOp Mod  = [SMod]
-transOp LOr  = [SLOr]
-transOp LAnd = [SLAnd]
 transOp Eq   = [SEq]
 transOp Neq  = [SNeq]
 transOp Lt   = [SLt]
@@ -131,11 +145,9 @@ newLabel _ = unsafePerformIO $
                writeIORef counter (i+1)
                return . Lbl $ "L" ++ show i
 
-comparisons = [LOr, LAnd, Eq, Neq, Lt, Lte, Gt, Gte]
+comparisons = [Eq, Neq, Lt, Lte, Gt, Gte]
 
 transJOp :: BinOp -> String -> SInst
-transJOp LOr  = SJLOr
-transJOp LAnd = SJLAnd
 transJOp Eq   = SJEq
 transJOp Neq  = SJNeq
 transJOp Lt   = SJLt
