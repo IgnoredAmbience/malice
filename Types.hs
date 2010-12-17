@@ -125,6 +125,7 @@ data SInst = SOr | SXor | SAnd | SAdd | SSub | SMul | SDiv | SMod | SLOr | SLAnd
 		   | SLabel String | SJump String | SJTrue String | SCall String | SEnter | SRestEnter | SRet -- Compiler directives
 		   | SJLOr String | SJLAnd String | SJEq String | SJNeq String | SJLt String | SJLte String | SJGt String | SJGte String
 		   | SPrintI | SPrintS String | SInput -- Output/Input
+           | SShiftL Int | SShiftR Int -- For multiplication/division hacks
   deriving (Eq)
 
 
@@ -135,7 +136,7 @@ data MInst = BinMOp BinMInst AsmOp AsmOp
            | Label Lbl
            | NonMOp NonMInst
 
-data BinMInst = MOr | MXor | MAnd | MAdd | MSub | MMul | MLOr | MCmp | MMov -- 2 operand instructions
+data BinMInst = MOr | MXor | MAnd | MAdd | MSub | MMul | MLOr | MCmp | MMov | MShl | MShr-- 2 operand instructions
 data UnMInst  = MDiv | MMod | MNot | MNeg | MInc | MDec | MPush | MPop  -- 1 operand instructions
 data JmpInst  = MJmp | MJGE | MJG | MJLE | MJL | MJE | MJNE | MCall 
 data NonMInst = MRet | MLeave | MEnter | MPushA | MPopA -- 0 operand instructions
@@ -186,6 +187,8 @@ instance Show BinMInst where
     show MLOr = "or"
     show MCmp = "cmp"
     show MMov = "mov"
+    show MShl = "shl"
+    show MShr = "shr"
 
 instance Show UnMInst where
     show MNot = "not"

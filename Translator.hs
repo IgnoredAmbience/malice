@@ -19,6 +19,7 @@ transFunc (Function name _ args stats) =
 transFunc (Lambda name _ stats) = [SLabel name, SEnter, SPop "it", SRestEnter] ++ concatMap transStat stats'
   where stats' = stats ++ [Return (Variable (Var "it"))]
 
+
 transStat :: Statement -> [SInst]
 transStat (Declare _ _) = []
 transStat (DeclareArr name _ length)       = (transExp length) ++ [SPushI 0] ++ [SPut name]
