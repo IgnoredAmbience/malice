@@ -10,13 +10,13 @@ translate functions = map transFunc functions
 
 transFunc :: Function -> [SInst]
 transFunc (Function name _ args stats) =
-	[SLabel name, SEnter] ++ (getArgs args) ++ [SRestEnter] ++ concatMap transStat stats
+	[SLabel name, SEnter] ++ (getArgs args) ++ [SRestEnter] ++ concatMap (transStat args) stats
 	where
 	  getArgs :: [(String,Type)] -> [SInst]
           getArgs []             = []
           getArgs ((name,_):as)  = (getArgs as) ++ [SPop name]
 
-transFunc (Lambda name _ stats) = [SLabel name, SEnter, SPop $ name ++ "_it", SRestEnter] ++ concatMap transStat stats'
+transFunc (Lambda name _ stats) = [SLabel name, SEnter, SPop $ name ++ "_it", SRestEnter] ++ concatMap (transStat []) stats'
   where stats' = stats ++ [Return (Variable (Var $ name ++ "_it"))]
 
 transStat :: [(String, Type)] -> Statement -> [SInst]
@@ -86,9 +86,9 @@ transStat args (If cond true false ) = ((transExp args cond) ++ [SJTrue lblT] ++
 		bodF = concatMap (transStat args) false
 		
 
-transStat (Comment _ ) = []
+transStat _ (Comment _ ) = []
 
-transStat x  = error ("UNDEFINED STATEMENT: " ++ show x)
+transStat _ x  = error ("UNDEFINED STATEMENT: " ++ show x)
 	
 transExp :: [(String, Type)] -> Exp -> [SInst]
 transExp _ (Int i)                        = [SPushI i]
