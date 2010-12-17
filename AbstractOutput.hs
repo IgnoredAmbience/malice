@@ -95,7 +95,7 @@ toSymbInstr (SPop n)   = [UnMOp MPop  (DWord (Name n))]
 toSymbInstr (SGet n) = [UnMOp MPop (Reg EAX), BinMOp MMov (Reg EBX) (ConstName n) -- Get the index and name
                      , BinMOp MMov (Reg EAX) (IndirectScale (Reg EBX) Four (Reg EAX)), UnMOp MPush (Reg EAX)] -- Get the value itself and push it
 
-toSymbInstr (SPut n) = [UnMOp MPop (Reg EAX), BinMOp MMov (Reg EBX) (ConstName n), UnMOp MPop (Reg ECX) -- Get the value, name and index
+toSymbInstr (SPut n) = [UnMOp MPop (Reg EAX), BinMOp MMov (Reg EBX) (ConstName n), JmpMOp MCall (Lbl "bounds_check"), BinMOp MMov (Reg EBX) (ConstName n), UnMOp MPop (Reg ECX) -- Get the value, name and index
                      , BinMOp MMov (IndirectScale (Reg EBX) Four (Reg EAX)) (Reg ECX)] -- Put the value
 
 toSymbInstr (SJump label)  = [JmpMOp MJmp (Lbl label)]

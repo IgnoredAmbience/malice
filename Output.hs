@@ -6,7 +6,7 @@ import Data.Map (toList, elems, mapWithKey)
 output :: DataTbl -> [SymbolTbl] -> [[MInst]] -> [String]
 --output dt st fns = (outputDataTable dt) ++ zipWith (++) (map outputSymbolTable st) (map outputASM fns)
 output dt st fns = (outputDataTable dt) ++ ["section .bss"] ++ (concatMap outputSymbolTable st)
-                   ++ ["section .text", "extern output_int", "extern output_str", "extern input_int", "global main"] ++ (concatMap outputASM fns)
+                   ++ ["section .text", "extern output_int", "extern output_str", "extern input_int", "extern bounds_check", "global main"] ++ (concatMap outputASM fns)
 
 outputASM :: [MInst] -> [String]
 outputASM is = map show (is ++ [BinMOp MXor (Reg EAX) (Reg EAX), NonMOp MRet]) ++ [""]
