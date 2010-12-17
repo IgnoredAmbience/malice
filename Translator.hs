@@ -67,9 +67,10 @@ transStat ((If cond@(BinOp op lhs rhs) true false) )
 		lblE = lbl ++ "_end"
 		bodT = concatMap transStat true
 		bodF = concatMap transStat false
+
 transStat (If cond true false ) = ((transExp cond) ++ [SJTrue lblT] ++ [SJump lblF]
-				                       ++ [SLabel lblT] ++ bodT ++ [SJump lblE]
-				                              ++ [SLabel lblF] ++ bodF ++ [SLabel lblE])
+                                  ++ [SLabel lblT] ++ bodT ++ [SJump lblE]
+                                  ++ [SLabel lblF] ++ bodF ++ [SLabel lblE])
 	where
 		(Lbl lbl) = newLabel id
 		lblT = lbl ++ "_true"
@@ -80,6 +81,7 @@ transStat (If cond true false ) = ((transExp cond) ++ [SJTrue lblT] ++ [SJump lb
 		
 
 transStat (Comment _ ) = []
+
 transStat _  = error "UNDEFINED STATEMENT"
 	
 
