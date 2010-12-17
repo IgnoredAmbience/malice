@@ -39,12 +39,12 @@ useUnknowns []     = return ()
 
                
 assemble :: String -> String
-assemble source =  unlines . concat . output dataTbl symbolTables . abstract . translate  $ program
+assemble source =  unlines {-. concat-} . output dataTbl symbolTables . abstract . translate  $ program
   where
     ((program, symbolTables), dataTbl) = semantics . parse $ alexScanTokens source
 
 peep :: String -> String
-peep source =  unlines . concat . output dataTbl symbolTables . peephole . abstract . translate  $ program
+peep source =  unlines {-. concat-} . output dataTbl symbolTables . peephole . abstract . translate  $ program
   where
     ((program, symbolTables), dataTbl) = semantics . parse $ alexScanTokens source
 
