@@ -2,6 +2,7 @@
 *.log
 *.hi
 *.o
+*.asm
 
 # Auto-generated
 Lexer.hs
