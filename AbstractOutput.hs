@@ -21,18 +21,53 @@ toSymbInstr (SShiftL i) = [BinMOp MShl (Indirect (Reg ESP)) (Const i)]
 toSymbInstr (SShiftR i) = [BinMOp MShr (Indirect (Reg ESP)) (Const i)]
 
 
-toSymbInstr SEq   = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EAX) (Reg EBX),JmpMOp MJE label,BinMOp MMov (Reg EAX) (Const 0), UnMOp MPush (Reg EAX), Label label, BinMOp MMov (Reg EAX) (Const 1), UnMOp MPush (Reg EAX)] -- EAX == EBX
-    where label = newLabel id
-toSymbInstr SNeq = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EAX) (Reg EBX),JmpMOp MJNE label, BinMOp MMov (Reg EAX) (Const 0), UnMOp MPush (Reg EAX), Label label, BinMOp MMov (Reg EAX) (Const 1), UnMOp MPush (Reg EAX)] -- EAX != EBX
-    where label = newLabel id
-toSymbInstr SLt   = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EAX) (Reg EBX),JmpMOp MJL label, BinMOp MMov (Reg EAX) (Const 0), UnMOp MPush (Reg EAX), Label label, BinMOp MMov (Reg EAX) (Const 1), UnMOp MPush (Reg EAX)] -- EAX < EBX
-    where label = newLabel id
-toSymbInstr SLte  = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EAX) (Reg EBX),JmpMOp MJLE label, BinMOp MMov (Reg EAX) (Const 0), UnMOp MPush (Reg EAX), Label label, BinMOp MMov (Reg EAX) (Const 1), UnMOp MPush (Reg EAX)] -- EAX <= EBX
-    where label = newLabel id
-toSymbInstr SGt   = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EAX) (Reg EBX),JmpMOp MJG label, BinMOp MMov (Reg EAX) (Const 0), UnMOp MPush (Reg EAX), Label label, BinMOp MMov (Reg EAX) (Const 1), UnMOp MPush (Reg EAX)] -- EAX > EBX
-    where label = newLabel id
-toSymbInstr SGte  = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EAX) (Reg EBX),JmpMOp MJGE label, BinMOp MMov (Reg EAX) (Const 0), UnMOp MPush (Reg EAX), Label label, BinMOp MMov (Reg EAX) (Const 1), UnMOp MPush (Reg EAX)] -- EAX >= EBX
-    where label = newLabel id
+toSymbInstr SEq = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EBX) (Reg EAX)
+                   , JmpMOp MJE lblT, UnMOp MPush (Const 0), JmpMOp MJmp lblE
+                   , Label lblT, UnMOp MPush (Const 1), Label lblE] -- EAX > EBX
+    where
+        (Lbl lbl) = newLabel id
+        lblT = (Lbl (lbl++"_true"))
+        lblE = (Lbl (lbl++"_end"))
+
+toSymbInstr SNeq = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EBX) (Reg EAX)
+                   , JmpMOp MJNE lblT, UnMOp MPush (Const 0), JmpMOp MJmp lblE
+                   , Label lblT, UnMOp MPush (Const 1), Label lblE] -- EAX > EBX
+    where
+        (Lbl lbl) = newLabel id
+        lblT = (Lbl (lbl++"_true"))
+        lblE = (Lbl (lbl++"_end"))
+
+toSymbInstr SLt = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EBX) (Reg EAX)
+                  , JmpMOp MJL lblT, UnMOp MPush (Const 0), JmpMOp MJmp lblE
+                  , Label lblT, UnMOp MPush (Const 1), Label lblE] -- EAX > EBX
+    where
+        (Lbl lbl) = newLabel id
+        lblT = (Lbl (lbl++"_true"))
+        lblE = (Lbl (lbl++"_end"))
+
+toSymbInstr SLte = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EBX) (Reg EAX)
+                   , JmpMOp MJLE lblT, UnMOp MPush (Const 0), JmpMOp MJmp lblE
+                   , Label lblT, UnMOp MPush (Const 1), Label lblE] -- EAX > EBX
+    where
+        (Lbl lbl) = newLabel id
+        lblT = (Lbl (lbl++"_true"))
+        lblE = (Lbl (lbl++"_end"))
+
+toSymbInstr SGt = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EBX) (Reg EAX)
+                  , JmpMOp MJG lblT, UnMOp MPush (Const 0), JmpMOp MJmp lblE
+                  , Label lblT, UnMOp MPush (Const 1), Label lblE] -- EAX > EBX
+    where
+        (Lbl lbl) = newLabel id
+        lblT = (Lbl (lbl++"_true"))
+        lblE = (Lbl (lbl++"_end"))
+
+toSymbInstr SGte = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EBX) (Reg EAX)
+                   , JmpMOp MJGE lblT, UnMOp MPush (Const 0), JmpMOp MJmp lblE
+                   , Label lblT, UnMOp MPush (Const 1), Label lblE] -- EAX > EBX
+    where
+        (Lbl lbl) = newLabel id
+        lblT = (Lbl (lbl++"_true"))
+        lblE = (Lbl (lbl++"_end"))
 
 
 toSymbInstr (SJLOr  label) = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MLOr (Reg EAX) (Reg EBX), BinMOp MCmp (Reg EAX) (Const 0), JmpMOp MJNE (Lbl label) ]
