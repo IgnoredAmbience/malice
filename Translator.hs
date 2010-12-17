@@ -32,9 +32,6 @@ transStat (LambdaApply label (Var name))   = [SPushN name] ++ [SCall label]
 transStat (LambdaApply label (VarArr n e)) = (transExp e) ++ [SGet n] ++ [SCall label]
 
 -- FIXME
-transStat (Input (Var name))        = error "Input (Var name) is undefined"
-transStat (Input (VarArr name exp)) = error "Input (VarArr name exp) is undefined"
-
 transStat (Input (Var name)) = [SInput] ++ [SPop name]
 transStat (Input (VarArr name index)) = [SInput] ++ (transExp index) ++ [SPut name]
 
