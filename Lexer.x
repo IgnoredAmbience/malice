@@ -103,10 +103,10 @@ alexScanTokens str = go (alexStartPos,'\n',str)
                 AlexSkip  inp' len     -> go inp'
                 AlexToken inp' len act -> (act (take len str), pos) : go inp'
 
-parseStr = unescapeStr . init . tail 
-unescapeStr :: String -> String
-unescapeStr [] = []
-unescapeStr s = chr : unescapeStr s'
-  where (chr, s'):_ = readLitChar s
+parseStr = escapeStr "`" . init . tail 
+escapeStr _ [] = []
+escapeStr cs (x:s)
+  | elem x cs = '\\' : x : escapeStr cs s
+  | otherwise = x : escapeStr cs s
 
 }
