@@ -23,8 +23,8 @@ symbolToDef _ (LambdaType _) = ""
 symbolToDef name x = name ++ " TODO UNKNOWN " ++ show x
 
 outputDataTable :: DataTbl -> [String]
-outputDataTable dt = ["section .data"] ++ (map stringDef $ toList dt) ++ (map stringLenDef $ elems dt)
+outputDataTable dt = ["section .data"] ++ concat ( zipWith (++) (map stringDef $ toList dt) (map stringLenDef $ elems dt) )
 
-stringDef (value, hash) = hash ++ ":\tdb\t`" ++ value ++ "`"
-stringLenDef hash = "len" ++ hash ++ ":\tequ\t$-" ++ hash
+stringDef (value, hash) = [hash ++ ":\tdb\t`" ++ value ++ "`"]
+stringLenDef hash = ["len" ++ hash ++ ":\tequ\t$-" ++ hash]
 
