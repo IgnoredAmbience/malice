@@ -25,12 +25,12 @@ data OutputStage = Lexer | Parser | Semantics | Translator | Peephole | Assemble
   deriving (Show, Eq,Ord)
 
 options :: [OptDescr Flag]
-options = [ Option ['S','s'] ["semantics"]           (NoArg (OutputMade Semantics)) "output the symbol table", 
-            Option ['L','l'] ["lexer"]               (NoArg (OutputMade Lexer)) "output the token list",
-            Option ['P','p'] ["parser"]              (NoArg (OutputMade Parser)) "output the AST",
+options = [ Option ['S','s'] ["semantics"]           (NoArg (OutputMade Semantics))  "output the symbol table", 
+            Option ['L','l'] ["lexer"]               (NoArg (OutputMade Lexer))      "output the token list",
+            Option ['P','p'] ["parser"]              (NoArg (OutputMade Parser))     "output the AST",
             Option ['T','t'] ["translate"]           (NoArg (OutputMade Translator)) "output intermediary assembly",
-            Option ['A','a'] ["assembly"]            (NoArg (OutputMade Assembler)) "output the generated assembly",
-            Option ['O','o'] ["optimise","optimize"] (NoArg (OutputMade Peephole)) "peephole optimise",
+            Option ['A','a'] ["assembly"]            (NoArg (OutputMade Assembler))  "output the generated assembly",
+            Option ['O','o'] ["optimise","optimize"] (NoArg (OutputMade Peephole))   "peephole optimise",
             Option ['F','f'] ["in","input","file"] (ReqArg Input "FILE")   "input from FILE"
           ]
 useUnknowns :: [String] -> IO ()
