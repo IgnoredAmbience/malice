@@ -1,19 +1,17 @@
 module Peephole where
 import Types
 
-peephole = map removePushPop
+peephole = map (fixPushPop.removePushXPopX)
 
-removePushPop :: [MInst] -> [MInst] --given x:y, remove both if removePushPop' x y
-removePushPop xs@(_:xs') = map fst $ filter snd $ zip xs ((foldr propagateFalse [] $ zipWith removePushPop' xs xs')++ [True]) 
---added ++ [TRUE] because zipWith xs (tail xs) is one shorter than the length of xs, which means that the filter trims one of the instructions
-removePushPop [] = []
+fixPushPop :: [MInst] -> [MInst] --takes a push x, pop REG, and turns it into a mov REG x
+fixPushPop xs = foldr pushPopToMov [] xs
+    where
+      pushPopToMov (UnMOp MPush x) ((UnMOp MPop (Reg y)):ys) = (BinMOp MMov (Reg y) x) : ys
+      pushPopToMov x ys = x : ys
 
-removePushPop' :: MInst -> MInst -> Bool
-removePushPop' (UnMOp MPush x) (UnMOp MPop y)  = x /= y
-removePushPop' (UnMOp MPop x)  (UnMOp MPush y) = x /= y
-removePushPop'  _               _              = True
-
-propagateFalse :: Bool -> [Bool] -> [Bool] --if x is true then the value after x should also be true i.e if there is a push then a pop, then remove both x and the one 
-propagateFalse x (y:ys) = x : (if not y then False else x) : ys
-propagateFalse x []     = [x]
-
+removePushXPopX :: [MInst] -> [MInst] --takes a push x, pop x, and removes both
+removePushXPopX xs = foldr aux [] xs
+    where
+      aux xIns@(UnMOp MPush x) (yIns@(UnMOp MPop  y):ys) = if x == y then ys else xIns:yIns:ys
+      aux xIns@(UnMOp MPop  x) (yIns@(UnMOp MPush y):ys) = if x == y then ys else xIns:yIns:ys
+      aux x ys = x : ys

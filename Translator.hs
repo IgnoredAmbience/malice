@@ -17,6 +17,7 @@ transFunc (Function name _ args stats) =
           popArgs ((name,Number):as)  = (popArgs as) ++ [SPushN name]
 	  popArgs ((name,Array _):as) = (popArgs as) ++ [SPushN name] -- TODO: make sure this actually works
 
+
 transStat :: Statement -> [SInst]
 transStat (Declare _ _) = []
 transStat (DeclareArr name _ length)       = (transExp length) ++ [SPushI 0] ++ [SPut name]
