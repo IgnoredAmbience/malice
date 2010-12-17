@@ -187,8 +187,8 @@ instance Show BinMInst where
     show MLOr = "or"
     show MCmp = "cmp"
     show MMov = "mov"
-    show MShl = "shl"
-    show MShr = "shr"
+    show MShl = "sal"
+    show MShr = "sar"
 
 instance Show UnMInst where
     show MNot = "not"
