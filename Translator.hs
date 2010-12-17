@@ -19,8 +19,8 @@ transFunc (Function name _ args stats) =
 
 transStat :: Statement -> [SInst]
 transStat (Declare _ _) = []
-transStat (DeclareArr name _ length) = (transExp length) ++ [SPushI 0] ++ [SPut name]
-transStat (Assign (Var name) exp)    = (transExp exp) ++ [SPop name]
+transStat (DeclareArr name _ length)       = (transExp length) ++ [SPushI 0] ++ [SPut name]
+transStat (Assign (Var name) exp)          = (transExp exp) ++ [SPop name]
 transStat (Assign (VarArr name index) exp) = (transExp exp) ++ (transExp index) ++ [SPut name]
 transStat (Call (FunctionCall label args)) = (concatMap transExp args) ++ [SCall label]
 transStat (Call _)                         = []
@@ -30,7 +30,6 @@ transStat (Decrement (Var name))           = [SPushN name] ++ [SDec] ++ [SPop na
 transStat (Decrement (VarArr name index))  = (transExp index) ++ [SGet name] ++ [SDec] ++ (transExp index) ++ [SPut name]
 transStat (LambdaApply label (Var name))   = [SPushN name] ++ [SCall label]
 transStat (LambdaApply label (VarArr n e)) = (transExp e) ++ [SGet n] ++ [SCall label]
-transStat _  = []
 
 -- FIXME
 transStat (Input (Var name))        = undefined
@@ -40,16 +39,20 @@ transStat (Input (VarArr name exp)) = undefined
 transStat (Output (Str s)) = ([SPrintS (lblStr s)])
 transStat (Output exp ) = ((transExp exp) ++ [SPrintI])
 transStat (Return exp ) = ((transExp exp) ++ [SRet])
+
+
 transStat (LoopUntil cond@(BinOp op lhs rhs) body )
 	| elem op comparisons = ([SLabel lbl] ++ bod ++ (transExp lhs) ++ (transExp rhs) ++ [transJOp op lbl])
 	| otherwise           = ([SLabel lbl] ++ bod ++ (transExp cond) ++ [SJTrue lbl])
 	where
 	  (Lbl lbl) = newLabel id
-          bod = concatMap transStat body
+	  bod = concatMap transStat body
+	                       
 transStat (LoopUntil cond body ) = ([SLabel lbl] ++ bod ++ (transExp cond) ++ [SJTrue lbl])
 	where
 	  (Lbl lbl) = newLabel id
-          bod = concatMap transStat body
+	  bod = concatMap transStat body
+
 transStat ((If cond@(BinOp op lhs rhs) true false) )
 	| elem op comparisons = ((transExp lhs) ++ (transExp rhs) ++ [(transJOp op) lblT] ++ [SJump lblF]
 							++ [SLabel lblT] ++ bodT ++ [SJump lblE]
@@ -64,9 +67,10 @@ transStat ((If cond@(BinOp op lhs rhs) true false) )
 		lblE = lbl ++ "_end"
 		bodT = concatMap transStat true
 		bodF = concatMap transStat false
+
 transStat (If cond true false ) = ((transExp cond) ++ [SJTrue lblT] ++ [SJump lblF]
-				                       ++ [SLabel lblT] ++ bodT ++ [SJump lblE]
-				                              ++ [SLabel lblF] ++ bodF ++ [SLabel lblE])
+                                  ++ [SLabel lblT] ++ bodT ++ [SJump lblE]
+                                  ++ [SLabel lblF] ++ bodF ++ [SLabel lblE])
 	where
 		(Lbl lbl) = newLabel id
 		lblT = lbl ++ "_true"
@@ -77,6 +81,8 @@ transStat (If cond true false ) = ((transExp cond) ++ [SJTrue lblT] ++ [SJump lb
 		
 
 transStat (Comment _ ) = []
+
+transStat _  = error "UNDEFINED STATEMENT"
 	
 
 transExp :: Exp -> [SInst]
@@ -86,8 +92,6 @@ transExp (Variable (Var name))          = [SPushN name]
 transExp (Variable (VarArr name index)) = (transExp index) ++ [SGet name]
 transExp (FunctionCall fn args)         = (concatMap transExp args) ++ [SCall fn]
 transExp (UnOp op exp)                  = (transExp exp) ++ (transUnOp op)
-
---transExp (BinOp op (Int i1) (Int i2))   = [SPushI (i1i2)]
 transExp (BinOp op exp1 exp2)           = (transExp exp1) ++ (transExp exp2) ++ (transOp op)
 
 transExp _ = []

@@ -54,8 +54,8 @@ toSymbInstr (SPrintS s) = [BinMOp MMov (Reg ECX) (Indirect (Name s)), BinMOp MMo
 toSymbInstr SPrintI = [UnMOp MPop (Reg EAX), JmpMOp MCall (Lbl "output_int")]
 
 toSymbInstr (SPushI i) = [UnMOp MPush (Const i)]
-toSymbInstr (SPushN n) = [UnMOp MPush (Name n)]
-toSymbInstr (SPop n) = [UnMOp MPop (Name n)]
+toSymbInstr (SPushN n) = [UnMOp MPush (DWord (Name n))]
+toSymbInstr (SPop n)   = [UnMOp MPop  (DWord (Name n))]
 
 toSymbInstr (SGet n) = [UnMOp MPop (Reg EAX), BinMOp MMov (Reg EBX) (Name n) -- Get the index and name
                      , BinMOp MMov (Reg EAX) (IndirectScale (Reg EBX) Four (Reg EAX)), UnMOp MPush (Reg EAX)] -- Get the value itself and push it
