@@ -91,36 +91,23 @@ output_int:
 	xor esi,esi
 
     test eax,eax
-    jns oi_1_us
+    jns oi_1
     mov byte [buf],'-'
     inc edi
-    jmp oi_1_s
-
-	oi_1_us:
-		; input comes into eax
-		xor edx,edx
-		idiv ebx
-		add edx,48
-		mov [buf + edi],dl
-		inc edi
-		cmp eax,0
-		jne oi_1_us
-        jmp oi_1_end
-
-	oi_1_s:
-		; input comes into eax
-        not eax
-        inc eax
-		xor edx,edx
-		idiv ebx
-		add edx,48
-		mov [buf + edi],dl
-		inc edi
-		cmp eax,0
-		jne oi_1_s
+    not eax
+    inc eax
     inc esi
+    jmp oi_1
 
-    oi_1_end:
+	oi_1:
+		; input comes into eax
+		xor edx,edx
+		idiv ebx
+		add edx,48
+		mov [buf + edi],dl
+		inc edi
+		cmp eax,0
+		jne oi_1
 
 	; flip the buffer
 	mov edx,edi	; save the string length
