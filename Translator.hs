@@ -40,6 +40,7 @@ transStat (Output (Str s)) = ([SPrintS s])
 transStat (Output exp ) = ((transExp exp) ++ [SPrintI])
 transStat (Return exp ) = ((transExp exp) ++ [SRet])
 
+
 transStat (LoopUntil cond@(BinOp op lhs rhs) body )
 	| elem op comparisons = ([SLabel lbl] ++ bod ++ (transExp lhs) ++ (transExp rhs) ++ [transJOp op lbl])
 	| otherwise           = ([SLabel lbl] ++ bod ++ (transExp cond) ++ [SJTrue lbl])
