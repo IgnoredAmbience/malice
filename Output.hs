@@ -1,9 +1,9 @@
 module Output where
 import Types
-import Data.Map (mapWithKey, elems)
+import Data.Map (toList, elems, mapWithKey)
 
-output :: [SymbolTbl] -> [SFn] -> [[String]]
-output st fns = [x++y | (x,y) <- zip (map outputSymbolTable st) (map outputASM fns)]
+output :: DataTbl -> [SymbolTbl] -> [SFn] -> [[String]]
+output dt st fns = [outputDataTable dt] ++ [x++y | (x,y) <- zip (map outputSymbolTable st) (map outputASM fns)]
 
 outputASM :: [SInst] -> [String]
 outputASM insts = ["section .text"] ++ ["global "++fname] ++ concatMap toASM insts ++ ["ret"]
@@ -63,3 +63,7 @@ symbolToDef _ (LambdaType _) = ""
 --symbolToDef name Sentence = 
 --symbolToDef name (Array a) =
 symbolToDef name x = name ++ " TODO UNKNOWN " ++ show x
+
+outputDataTable :: DataTbl -> [String]
+outputDataTable dt = ["section .data"] ++ (map (\(value, hash) -> hash ++ ":\tdb\t`" ++ value ++ "`") $ toList dt)
+

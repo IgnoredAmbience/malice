@@ -37,9 +37,9 @@ useUnknowns []     = return ()
 
                
 assemble :: String -> String
-assemble source =  unlines . concat . output symbolTables . translate  $ program
+assemble source =  unlines . concat . output dataTbl symbolTables . translate  $ program
   where
-    (program, symbolTables) = semantics . parse $ alexScanTokens source
+    ((program, symbolTables), dataTbl) = semantics . parse $ alexScanTokens source
 
 processFlags :: [Flag] -> IO () -- empty string is stdin / stdout respectively
 processFlags fs = input >>= 
@@ -47,7 +47,7 @@ processFlags fs = input >>=
                       Lexer     -> outputData . groomString . show . alexScanTokens 
                       Parser    -> outputData . groomString . show . parse . alexScanTokens
                       Semantics -> outputData . groomString . show . semantics . parse . alexScanTokens
-                      Translator -> outputData . groomString . show . translate . fst . semantics . parse . alexScanTokens
+                      Translator -> outputData . groomString . show . translate . fst . fst . semantics . parse . alexScanTokens
                       Assembler   -> outputData . assemble
   where
     (compileStage, inFrom, outTo) = foldr processFlagStep (Assembler, "", "") fs
@@ -66,3 +66,4 @@ processFlags fs = input >>=
                                     OutputMade s' -> (min s s', i, o)
                                     Input inFile   -> (s, inFile, o)
                                     Output outFile -> (s, i, outFile)
+

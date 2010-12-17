@@ -2,14 +2,16 @@ module Semantics where
 import Types
 import qualified Data.Map as Map
 import Data.HashTable (hashString)
+import Data.List (mapAccumL)
 
 type Rewrite = Map.Map String String
 
-semantics :: Program -> (Program, [SymbolTbl])
+semantics :: Program -> ((Program, [SymbolTbl]), DataTbl)
 semantics funcs
-  = unzip $ map (buildFunctionSymbolTbl (funcTbl) funcs
+  = (unzip fps, dt)
     where
       funcTbl = foldl addFunction Map.empty funcs
+      (dt, fps) = mapAccumL (buildFunctionSymbolTbl funcTbl) Map.empty funcs
 
 -- Add function definitions into (global) symbol table
 addFunction :: SymbolTbl -> Function -> SymbolTbl
@@ -23,15 +25,15 @@ addFunction st (Lambda name typ _)
   = Map.insertWithKey alreadyDefinedError name (LambdaType typ) st
 
 -- Build symbol table for a function
-buildFunctionSymbolTbl :: (SymbolTbl, DataTbl) -> Function -> (Function, SymbolTbl, DataTbl)
-buildFunctionSymbolTbl (funcSt, dt) (Function name typ params stmts)
-  = (Function name typ params stmts', st', dt')
+buildFunctionSymbolTbl :: SymbolTbl -> DataTbl -> Function -> (DataTbl, (Function, SymbolTbl))
+buildFunctionSymbolTbl funcSt dt (Function name typ params stmts)
+  = (dt', (Function name typ params stmts', st'))
     where
-      (stmts', st', dt') = foldl (addStatement 0) ([], st, Map.empty, dt) stmts
+      (stmts', st', _, dt') = foldl (addStatement 0) ([], st, Map.empty, dt) stmts
       st = Map.unionWithKey alreadyDefinedError funcSt (Map.fromList params) 
 
-buildFunctionSymbolTbl (funcSt, dt) (Lambda name typ stmts)
-  = (Lambda name typ stmts', st', dt')
+buildFunctionSymbolTbl funcSt dt (Lambda name typ stmts)
+  = (dt', (Lambda name typ stmts', st'))
     where
       (stmts', st', _, dt') = foldl (addStatement 0) ([], st, Map.empty, dt) stmts
       st = Map.unionWithKey alreadyDefinedError funcSt (Map.singleton "it" typ') 
@@ -47,7 +49,7 @@ addStatement d (ss,st,rt,dt) s@(Declare x t)
   -- Symbol already in table, and at root level or has already been rewritten to new var
   | member && (d == 0 || rewritten) = alreadyDefinedError x (st Map.! x) t
   -- Symbol already in table, but at a higher scope, rename into symbtbl, add alias to rename table
-  | member           = (ss++[Declare newName t], Map.insert newName t st, Map.insert x newName rt)
+  | member           = (ss++[Declare newName t], Map.insert newName t st, Map.insert x newName rt, dt)
   | otherwise        = (ss++[s], Map.insert x t st, rt, dt)
   where
     member = Map.member x st
@@ -58,7 +60,7 @@ addStatement d (ss,st,rt,dt) s@(DeclareArr name typ size)
   -- Symbol already in table, and at root level or has already been rewritten to new var
   | member && (d == 0 || rewritten) = alreadyDefinedError name (st Map.! name) (Array typ)
   -- Symbol already in table, but at a higher scope, rename into symbtbl, add alias to rename table
-  | member           = (ss++[DeclareArr newName typ size], Map.insert newName (Array typ) st, Map.insert name newName rt)
+  | member           = (ss++[DeclareArr newName typ size], Map.insert newName (Array typ) st, Map.insert name newName rt, dt)
   | otherwise        = (ss++[s], Map.insert name (Array typ) st, rt, dt)
   where
     member = Map.member name st
@@ -117,18 +119,18 @@ addStatement _ (ss,st,rt,dt) (Return exp) = (ss++[Return exp'], st, rt, dt')
     exp'     = renameExpVars rt exp
     (_, dt') = semanticExp (st, dt) exp'
 
-addStatement d (ss,st,rt,dt) (LoopUntil exp sts) = (ss++[LoopUntil exp' loopStats], st'', rt, dt')
+addStatement d (ss,st,rt,dt) (LoopUntil exp sts) = (ss++[LoopUntil exp' loopStats], st'', rt, dt'')
   where
-    (loopStats, st'', _) = stmtsSmbTbl (d+1) ([], st, rt) sts
+    (loopStats, st'', _, dt'') = stmtsSmbTbl (d+1) ([], st, rt, dt') sts
     exp'      = renameExpVars rt exp
     (_, dt')  = semanticExp (st, dt) exp'
 
-addStatement d (ss,st,rt,dt) (If exp thenSts elseSts) = (ss++[If exp' thenSts' elseSts'], st''', rt, dt)
+addStatement d (ss,st,rt,dt) (If exp thenSts elseSts) = (ss++[If exp' thenSts' elseSts'], st''', rt, dt''')
   where
     exp'      = renameExpVars rt exp
     (_, dt')  = semanticExp (st, dt) exp'
-    (thenSts', st'', _) = stmtsSmbTbl (d+1) ([], st, rt) thenSts
-    (elseSts', st''', _) = stmtsSmbTbl (d+1) ([], st'', rt) elseSts
+    (thenSts', st'', _, dt'') = stmtsSmbTbl (d+1) ([], st, rt, dt') thenSts
+    (elseSts', st''', _, dt''') = stmtsSmbTbl (d+1) ([], st'', rt, dt'') elseSts
 
 addStatement _ st (Comment _) = st
 
@@ -142,7 +144,7 @@ semanticExp :: (SymbolTbl, DataTbl) -> Exp -> (Type, DataTbl)
 semanticExp (st,dt) (Int _)  = (Number, dt)
 semanticExp (st,dt) (Char _) = (Letter, dt)
 semanticExp (st,dt) (Str s)  = (Sentence, dt')
-  where dt' = Map.insert s (lblStr s)
+  where dt' = Map.insert s (lblStr s) dt
 semanticExp (st,dt) (Variable v) = (typeOf st v, dt)
 
 semanticExp (st,dt) (UnOp op exp)    
@@ -168,10 +170,10 @@ semanticExp (st,dt) (FunctionCall name params)
     comparedTypes = zipWith castable paramTypes expParamTypes
 
 checkParamTypes :: [Exp] -> SymbolTbl -> DataTbl -> ([Type], DataTbl)
-checkParamTypes [] d = ([], d)
-checkParamTypes s (e:es) d = (t:ts, d'')
+checkParamTypes [] _ d = ([], d)
+checkParamTypes (e:es) s d = (t:ts, d'')
   where
-    (ts, d'') = checkParamTypes s es d'
+    (ts, d'') = checkParamTypes es s d'
     (t, d')   = semanticExp (s, d) e
 
 renameExpVars :: Rewrite -> Exp -> Exp
@@ -229,7 +231,7 @@ typeOf st (Var x)      = Map.findWithDefault (undefinedError x) x st
 typeOf st (VarArr x _) = t
   where Array t = Map.findWithDefault (undefinedError x) x st
 
-lblStr s = "str" ++ show (hashString s)
+lblStr s = "str" ++ show(abs$hashString s)
 
 -- Error messages
 semError = error . (++) "Semantic error: " 
