@@ -1,11 +1,10 @@
-module TranslatorOptimize where
+module TranslatorOptimize(transOptimize) where
 import Types
-import Translator
 import Data.Bits
 
 
-transOptimize :: [SInst] -> [SInst]
-transOptimize = constantFold
+transOptimize :: [SymbolTbl] -> [[SInst]] -> [[SInst]]
+transOptimize symTab = {-zipWith removeVariables symTab.-} map constantFold
 
 
 constantFold :: [SInst] -> [SInst]
@@ -29,3 +28,13 @@ constantFold' (SPushI i1 : SPushI i2 : SMod : ss) = (SPushI (mod i1 i2) : consta
 
 constantFold' (s:ss) = (s:constantFold' ss)
 constantFold' [] = []
+
+removeVariables :: SymbolTbl -> [SInst] -> [SInst]
+removeVariables = undefined
+
+
+getVarCount :: SymbolTbl -> [SInst] -> [(String,Type,Integer)]
+getVarCount symTab instrs = undefined -- toList symTab
+    where
+      x = undefined
+

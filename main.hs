@@ -6,6 +6,7 @@ import Translator
 import Output
 import AbstractOutput
 import Peephole
+import TranslatorOptimize
 import System (getArgs)
 import System.Console.GetOpt -- http://leiffrenzel.de/papers/commandline-options-in-haskell.html 
 import Text.Groom
@@ -21,7 +22,7 @@ main = do
 
 data Flag = Output String | Input String | OutputMade OutputStage
   deriving (Show)
-data OutputStage = Lexer | Parser | Semantics | Translator | Peephole | Assembler
+data OutputStage = Lexer | Parser | Semantics | Translator | Optimise | Assembler
   deriving (Show, Eq,Ord)
 
 options :: [OptDescr Flag]
@@ -30,7 +31,7 @@ options = [ Option ['S','s'] ["semantics"]           (NoArg (OutputMade Semantic
             Option ['P','p'] ["parser"]              (NoArg (OutputMade Parser))     "output the AST",
             Option ['T','t'] ["translate"]           (NoArg (OutputMade Translator)) "output intermediary assembly",
             Option ['A','a'] ["assembly"]            (NoArg (OutputMade Assembler))  "output the generated assembly",
-            Option ['O','o'] ["optimise","optimize"] (NoArg (OutputMade Peephole))   "peephole optimise",
+            Option ['O','o'] ["optimise","optimize"] (NoArg (OutputMade Optimise))   "some peephole optimisations",
             Option ['F','f'] ["in","input","file"] (ReqArg Input "FILE")   "input from FILE"
           ]
 useUnknowns :: [String] -> IO ()
@@ -43,8 +44,8 @@ assemble source =  unlines {-. concat-} . output dataTbl symbolTables . abstract
   where
     ((program, symbolTables), dataTbl) = semantics . parse $ alexScanTokens source
 
-peep :: String -> String
-peep source =  unlines {-. concat-} . output dataTbl symbolTables . peephole . abstract . translate  $ program
+optimise :: String -> String
+optimise source =  unlines . output dataTbl symbolTables . peephole . abstract . transOptimize symbolTables  . translate  $ program
   where
     ((program, symbolTables), dataTbl) = semantics . parse $ alexScanTokens source
 
@@ -55,7 +56,7 @@ processFlags fs = input >>=
                       Parser     -> outputData . groomString . show . parse . alexScanTokens
                       Semantics  -> outputData . groomString . show . semantics . parse . alexScanTokens
                       Translator -> outputData . groomString . show . translate . fst . fst . semantics . parse . alexScanTokens
-                      Peephole   -> outputData . peep
+                      Optimise   -> outputData . optimise
                       Assembler  -> outputData . assemble
   where
     (compileStage, inFrom, outTo) = foldr processFlagStep (Assembler, "", "") fs
