@@ -30,7 +30,7 @@ transStat _ (Increment (Var name))           = [SPushN name] ++ [SInc] ++ [SPop 
 transStat a (Increment (VarArr name index))  = (transExp a index) ++ [SGet name] ++ [SInc] ++ (transExp a index) ++ [SPut name]
 transStat _ (Decrement (Var name))           = [SPushN name] ++ [SDec] ++ [SPop name]
 transStat a (Decrement (VarArr name index))  = (transExp a index) ++ [SGet name] ++ [SDec] ++ (transExp a index) ++ [SPut name]
-transStat _ (LambdaApply label (Var name))   = [SPushN name] ++ [SCall label] ++ [SPop name]
+transStat _ (LambdaApply label (Var name))   = [SPushN name] ++ [SCall label] ++ [SPushEax] ++ [SPop name]
 -- TODO Could de-duplicate transExp?
 transStat a (LambdaApply label (VarArr n e)) = (transExp a e) ++ [SGet n] ++ [SCall label] ++ (transExp a e) ++ [SPut n]
 
