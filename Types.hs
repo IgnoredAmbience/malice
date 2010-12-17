@@ -120,7 +120,7 @@ data SInst = SOr | SXor | SAnd | SAdd | SSub | SMul | SDiv | SMod | SLOr | SLAnd
 		   | SLabel String | SJump String | SJTrue String | SCall String | SRet -- Compiler directives
 		   | SJLOr String | SJLAnd String | SJEq String | SJNeq String | SJLt String | SJLte String | SJGt String | SJGte String
 		   | SPrintI | SPrintS String -- Print
-  deriving (Eq)
+  deriving (Show,Eq)
 
 
 ----------------------------------------
