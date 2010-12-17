@@ -25,6 +25,6 @@ symbolToDef name x = name ++ " TODO UNKNOWN " ++ show x
 outputDataTable :: DataTbl -> [String]
 outputDataTable dt = ["section .data"] ++ (map stringDef $ toList dt) ++ (map stringLenDef $ elems dt)
 
-stringDef (value, hash) = hash ++ ":\tdb\t`" ++ value ++ "\\0`"
+stringDef (value, hash) = hash ++ ":\tdb\t`" ++ value ++ "`"
 stringLenDef hash = "len" ++ hash ++ ":\tequ\t$-" ++ hash
 
