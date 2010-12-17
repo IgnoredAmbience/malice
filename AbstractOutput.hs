@@ -17,6 +17,9 @@ toSymbInstr SMul = [UnMOp MPop (Reg EAX), BinMOp MMul (Reg EAX) (Indirect (Reg E
 toSymbInstr SDiv = [UnMOp MPop (Reg EBX), UnMOp MPop (Reg EAX), BinMOp MXor (Reg EDX) (Reg EDX), UnMOp MDiv (Reg EBX), UnMOp MPush (Reg EAX)]
 toSymbInstr SMod = [UnMOp MPop (Reg EBX), UnMOp MPop (Reg EAX), BinMOp MXor (Reg EDX) (Reg EDX), UnMOp MDiv (Reg EBX), UnMOp MPush (Reg EDX)]
 
+toSymbInstr (SShiftL i) = [BinMOp MShl (Indirect (Reg ESP)) (Const i)]
+toSymbInstr (SShiftR i) = [BinMOp MShr (Indirect (Reg ESP)) (Const i)]
+
 
 toSymbInstr SLOr  = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EAX) (Reg EBX)] -- EAX || EBX
 toSymbInstr SLAnd = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX)] -- EAX && EBX

@@ -4,7 +4,7 @@ import Data.Bits
 
 
 transOptimize :: [SymbolTbl] -> [[SInst]] -> [[SInst]]
-transOptimize symTab = {-zipWith removeVariables symTab.-} map constantFold
+transOptimize symTab = {-zipWith removeVariables symTab.-} map (shiftHax.constantFold)
 
 
 constantFold :: [SInst] -> [SInst]
@@ -28,6 +28,22 @@ constantFold' (SPushI i1 : SPushI i2 : SMod : ss) = (SPushI (mod i1 i2) : consta
 
 constantFold' (s:ss) = (s:constantFold' ss)
 constantFold' [] = []
+
+
+shiftHax :: [SInst] -> [SInst]
+shiftHax (SPushI 1 : SMul : ss) = (shiftHax ss)
+shiftHax (SPushI 1 : SDiv : ss) = (shiftHax ss)
+shiftHax (SPushI i : SMul : ss)
+    | 2^shift == i = (SShiftL shift : shiftHax ss)
+    | otherwise    = (shiftHax ss)
+        where shift = floor (logBase 2 (fromIntegral i))
+shiftHax (SPushI i : SDiv : ss)
+    | 2^shift == i = (SShiftR shift : shiftHax ss)
+    | otherwise    = (shiftHax ss)
+        where shift = floor (logBase 2 (fromIntegral i))
+
+shiftHax (s:ss) = (s:shiftHax ss)
+shiftHax [] = []
 
 removeVariables :: SymbolTbl -> [SInst] -> [SInst]
 removeVariables = undefined
