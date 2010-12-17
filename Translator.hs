@@ -35,11 +35,13 @@ transStat (LambdaApply label (VarArr n e)) = (transExp e) ++ [SGet n] ++ [SCall 
 transStat (Input (Var name))        = error "Input (Var name) is undefined"
 transStat (Input (VarArr name exp)) = error "Input (VarArr name exp) is undefined"
 
--- TODO:
+transStat (Input (Var name)) = [SInput] ++ [SPop name]
+transStat (Input (VarArr name index)) = [SInput] ++ (transExp index) ++ [SPut name]
+
 transStat (Output (Str s)) = ([SPrintS (lblStr s)])
 transStat (Output exp ) = ((transExp exp) ++ [SPrintI])
-transStat (Return exp ) = ((transExp exp) ++ [SRet])
 
+transStat (Return exp ) = ((transExp exp) ++ [SRet])
 
 transStat (LoopUntil cond@(BinOp op lhs rhs) body )
 	| elem op comparisons = ([SLabel lbl] ++ bod ++ (transExp lhs) ++ (transExp rhs) ++ [transJOp op lbl])
