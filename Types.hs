@@ -119,10 +119,10 @@ lblStrLen h = "len" ++ h
 
 type SFn = [SInst]
 
-data SInst = SOr | SXor | SAnd | SAdd | SSub | SMul | SDiv | SMod | SLOr | SLAnd | SEq | SNeq | SLt | SLte | SGt | SGte -- 2 operand instructions
+data SInst = SOr | SXor | SAnd | SAdd | SSub | SMul | SDiv | SMod | SEq | SNeq | SLt | SLte | SGt | SGte -- 2 operand instructions
            | SNot | SNeg | SInc | SDec -- 1 operand instructions
 		   | SPushI Int | SPushN String | SPop String | SGet String | SPut String -- Data manipulation instructions
-		   | SLabel String | SJump String | SJTrue String | SCall String | SRet -- Compiler directives
+		   | SLabel String | SJump String | SJTrue String | SJFalse String | SCall String | SRet -- Compiler directives
 		   | SJLOr String | SJLAnd String | SJEq String | SJNeq String | SJLt String | SJLte String | SJGt String | SJGte String
 		   | SPrintI | SPrintS String | SInput -- Output/Input
            | SShiftL Int | SShiftR Int -- For multiplication/division hacks

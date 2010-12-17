@@ -90,8 +90,20 @@ transExp (Int i)                        = [SPushI i]
 transExp (Char c)                       = [SPushI (ord c)]
 transExp (Variable (Var name))          = [SPushN name]
 transExp (Variable (VarArr name index)) = (transExp index) ++ [SGet name]
-transExp (FunctionCall fn args)         = (concatMap transExp args) ++ [SCall fn]
 transExp (UnOp op exp)                  = (transExp exp) ++ (transUnOp op)
+
+-- Short circuit operators have a distinct lack of Jonny 5
+transExp (BinOp LOr exp1 exp2)          = (transExp exp1) ++ [SJTrue lblT] ++ (transExp exp2) ++ [SJTrue lblT] ++ [SPushI 0] ++ [SJump lblE] ++ [SLabel lblT] ++ [SPushI 1] ++ [SLabel lblE]
+    where
+        (Lbl lbl) = newLabel id
+        lblT = lbl++"_true"
+        lblE = lbl++"_end"
+transExp (BinOp LAnd exp1 exp2)         = (transExp exp1) ++ [SJFalse lblF] ++ (transExp exp2) ++ [SJFalse lblF] ++ [SPushI 1] ++ [SJump lblE] ++ [SLabel lblF] ++ [SPushI 0] ++ [SLabel lblE]
+    where
+        (Lbl lbl) = newLabel id
+        lblF = lbl++"_false"
+        lblE = lbl++"_end"
+
 transExp (BinOp op exp1 exp2)           = (transExp exp1) ++ (transExp exp2) ++ (transOp op)
 
 transExp _ = []
@@ -109,8 +121,6 @@ transOp Sub  = [SSub]
 transOp Mul  = [SMul]
 transOp Div  = [SDiv]
 transOp Mod  = [SMod]
-transOp LOr  = [SLOr]
-transOp LAnd = [SLAnd]
 transOp Eq   = [SEq]
 transOp Neq  = [SNeq]
 transOp Lt   = [SLt]

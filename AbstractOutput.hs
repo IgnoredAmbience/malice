@@ -21,8 +21,6 @@ toSymbInstr (SShiftL i) = [BinMOp MShl (Indirect (Reg ESP)) (Const i)]
 toSymbInstr (SShiftR i) = [BinMOp MShr (Indirect (Reg ESP)) (Const i)]
 
 
-toSymbInstr SLOr  = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EAX) (Reg EBX)] -- EAX || EBX
-toSymbInstr SLAnd = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX)] -- EAX && EBX
 toSymbInstr SEq   = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EAX) (Reg EBX),JmpMOp MJE label,BinMOp MMov (Reg EAX) (Const 0), UnMOp MPush (Reg EAX), Label label, BinMOp MMov (Reg EAX) (Const 1), UnMOp MPush (Reg EAX)] -- EAX == EBX
     where label = newLabel id
 toSymbInstr SNeq = [UnMOp MPop (Reg EAX), UnMOp MPop (Reg EBX), BinMOp MCmp (Reg EAX) (Reg EBX),JmpMOp MJNE label, BinMOp MMov (Reg EAX) (Const 0), UnMOp MPush (Reg EAX), Label label, BinMOp MMov (Reg EAX) (Const 1), UnMOp MPush (Reg EAX)] -- EAX != EBX
@@ -67,11 +65,12 @@ toSymbInstr (SGet n) = [UnMOp MPop (Reg EAX), BinMOp MMov (Reg EBX) (Name n) -- 
 toSymbInstr (SPut n) = [UnMOp MPop (Reg EAX), BinMOp MMov (Reg EBX) (Name n), UnMOp MPop (Reg ECX) -- Get the value, name and index
                      , BinMOp MMov (IndirectScale (Reg EBX) Four (Reg EAX)) (Reg ECX)] -- Put the value
 
-toSymbInstr (SJump label)  = [JmpMOp MJmp (Lbl label)]
-toSymbInstr (SJTrue label) = [UnMOp MPop (Reg EAX), BinMOp MCmp (Reg EAX) (Const 0), JmpMOp MJNE (Lbl label)]
-toSymbInstr (SCall label)  = [JmpMOp MCall (Lbl label), UnMOp MPush (Reg EAX)] -- Grab value off eax once the function point has been returned to
-toSymbInstr (SRet)         = [UnMOp MPop (Reg EAX), NonMOp MRet]
-toSymbInstr (SLabel s)     = [Label (Lbl s)]
+toSymbInstr (SJump label)   = [JmpMOp MJmp (Lbl label)]
+toSymbInstr (SJTrue label)  = [UnMOp MPop (Reg EAX), BinMOp MCmp (Reg EAX) (Const 0), JmpMOp MJNE (Lbl label)]
+toSymbInstr (SJFalse label) = [UnMOp MPop (Reg EAX), BinMOp MCmp (Reg EAX) (Const 0), JmpMOp MJE (Lbl label)]
+toSymbInstr (SCall label)   = [JmpMOp MCall (Lbl label), UnMOp MPush (Reg EAX)] -- Grab value off eax once the function point has been returned to
+toSymbInstr (SRet)          = [UnMOp MPop (Reg EAX), NonMOp MRet]
+toSymbInstr (SLabel s)      = [Label (Lbl s)]
 
 instance Show SInst where --moved here from Types.hs to prevent circular dependencies. Cleanest way to do it
     show = intercalate "\n" . map show .toSymbInstr 
