@@ -16,8 +16,8 @@ transFunc (Function name _ args stats) =
           getArgs []             = []
           getArgs ((name,_):as)  = (getArgs as) ++ [SPop name]
 
-transFunc (Lambda name _ stats) = [SLabel name, SEnter, SPop "it", SRestEnter] ++ concatMap transStat stats'
-  where stats' = stats ++ [Return (Variable (Var "it"))]
+transFunc (Lambda name _ stats) = [SLabel name, SEnter, SPop $ name ++ "_it", SRestEnter] ++ concatMap transStat stats'
+  where stats' = stats ++ [Return (Variable (Var $ name ++ "_it"))]
 
 
 transStat :: Statement -> [SInst]
