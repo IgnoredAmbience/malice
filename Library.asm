@@ -1,6 +1,9 @@
 section .data
 
-buf db 80
+buf: times 80 db 0
+rbuf: times 80 db 0
+rbuflen: dd 0
+rbufptr: dd 0
 
 err1 db `Oh no! You wanted their `
 len1 equ $-err1
@@ -33,48 +36,72 @@ _start:
 input_int:
 ; README: THIS BREAKS WHEN READING IN FROM A PIPE
 ; (however, this works fine from the terminal)
-  mov eax,READ     ; fread(stdin,buf,79)
-  mov ebx,STDIN
-  mov ecx,buf
-  mov edx,79
-  int 80H
+  
+  mov edi, [rbufptr]
+  mov esi, [rbuflen]
+  xor ecx,ecx
 
-  xor edi,edi
+  ii_seek:
+    cmp edi, esi
+    jge ii_read           ; read in if out of bounds, or no data
+
+    mov cl,[rbuf + edi]
+    cmp ecx,'0'
+    jl ii_seek_next
+    cmp ecx,'9'
+    jg ii_seek_next
+    jmp ii_main           ; data found, begin
+  ii_seek_next:
+    inc edi               ; loop to next char in buf
+    jmp ii_seek
+
+  ii_read:
+    mov eax,READ     ; read(stdin,rbuf,79)
+    mov ebx,STDIN
+    mov ecx,rbuf
+    mov edx,79
+    int 80H
+
+    xor edi,edi
+    mov [rbuflen],eax
+
+  ii_main:
   xor eax,eax   ; result
   mov ebx,10    ; imul is silly
   xor ecx,ecx
 
-  mov cl,[buf]
-  cmp ecx,45
+  mov cl,[rbuf + edi]
+  cmp ecx,'-'
   jne ii_1_pos
   inc edi
   jmp ii_1_neg
 
   ii_1_pos:
-    mov cl,[buf + edi] ; move the next char into ecx
-    cmp ecx,48    ; is it less than '0', if so exit
+    mov cl,[rbuf + edi] ; move the next char into ecx
+    cmp ecx,'0'    ; is it less than '0', if so exit
     jl exit
-    cmp ecx,57    ; is it more than '9', if so exit
+    cmp ecx,'9'    ; is it more than '9', if so exit
     jg exit
-    imul eax,ebx  ; multiply the current result by 10
-    sub ecx,48    ; convert the ascii number to an actual one
+    imul eax,ebx   ; multiply the current result by 10
+    sub ecx,'0'    ; convert the ascii number to an actual one
     add eax,ecx    ; add it to the result register
-    inc edi      ; move to next char
+    inc edi        ; move to next char
     jmp ii_1_pos
 
   ii_1_neg:
-    mov cl,[buf + edi] ; move the next char into ecx
-    cmp ecx,48    ; is it less than '0', if so exit
+    mov cl,[rbuf + edi] ; move the next char into ecx
+    cmp ecx,'0'    ; is it less than '0', if so exit
     jl exit
-    cmp ecx,57    ; is it more than '9', if so exit
+    cmp ecx,'9'    ; is it more than '9', if so exit
     jg exit
-    imul eax,ebx  ; multiply the current result by 10
-    sub ecx,48    ; convert the ascii number to an actual one
+    imul eax,ebx   ; multiply the current result by 10
+    sub ecx,'0'    ; convert the ascii number to an actual one
     sub eax,ecx    ; subtract it from the result register
-    inc edi      ; move to next char
+    inc edi        ; move to next char
     jmp ii_1_neg
 
   exit:
+    mov [rbufptr], edi
     ret
 
 
@@ -82,7 +109,7 @@ output_str:
   push eax
   push ebx
 
-  mov eax, WRITE   ; fwrite(stdout,buf,len)
+  mov eax, WRITE   ; write(stdout,buf,len)
   mov ebx, STDOUT
   ; implemented by Output.hs, setting up ECX to be the address of the string
   ; also implemented by Output.hs, setting up EDX to be the number of chars to print
