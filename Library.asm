@@ -34,9 +34,6 @@ _start:
   int 80H
 
 input_int:
-; README: THIS BREAKS WHEN READING IN FROM A PIPE
-; (however, this works fine from the terminal)
-  
   mov edi, [rbufptr]
   mov esi, [rbuflen]
   xor ecx,ecx
