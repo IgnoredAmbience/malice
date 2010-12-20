@@ -107,7 +107,6 @@ output_int:
   not eax
   inc eax
   inc esi
-  jmp oi_1
 
   oi_1:
     ; input comes into eax
