@@ -2,6 +2,7 @@ module Semantics(semantics) where
 import Types
 import qualified Data.Map as Map
 import Data.List (mapAccumL)
+import Data.Maybe (fromJust)
 
 type Rewrite = Map.Map String String
 
@@ -14,7 +15,9 @@ semantics funcs = (unzip fps', dt)
 
       f :: (Function, SymbolTbl) -> (Function, SymbolTbl)
       f (Function n t params sts, st) = (Function n t params' (map (renameStVars (renameV n)) sts), Map.mapKeys (renameF n) st)
-        where params' = map (\(p, t) -> (renameF n p, t)) params
+        where
+          params' = map (\(p, t) -> (renameF n p, t)) params
+
       f (Lambda n t sts, st) = (Lambda n t (map (renameStVars (renameV n)) sts), Map.mapKeys (renameF n) st)
 
       renameF fn pn = fn ++ "_" ++ pn
@@ -29,8 +32,9 @@ addFunction st (Function name typ ps _)
     where
       paramTypes = map snd ps
 
-addFunction st (Lambda name typ _)
-  = Map.insertWithKey alreadyDefinedError name (LambdaType typ) st
+addFunction st (Lambda name typ stmts)
+  = Map.insertWithKey alreadyDefinedError name (LambdaType typ') st
+    where typ' = lambdaType stmts typ
 
 -- Build symbol table for a function
 buildFunctionSymbolTbl :: SymbolTbl -> DataTbl -> Function -> (DataTbl, (Function, SymbolTbl))
@@ -41,11 +45,11 @@ buildFunctionSymbolTbl funcSt dt (Function name typ params stmts)
       st = Map.unionWithKey alreadyDefinedError funcSt (Map.fromList params) 
 
 buildFunctionSymbolTbl funcSt dt (Lambda name typ stmts)
-  = (dt', (Lambda name typ stmts', st'))
+  = (dt', (Lambda name typ' stmts', st'))
     where
       (stmts', st', _, dt') = foldl (addStatement 0) ([], st, Map.empty, dt) stmts
-      st = Map.unionWithKey alreadyDefinedError funcSt (Map.singleton "it" typ') 
-      typ' = lambdaType stmts typ
+      st = Map.unionWithKey alreadyDefinedError funcSt (Map.singleton "it" typ')
+      (LambdaType typ') = fromJust $ Map.lookup name funcSt
 
 -- Build symbol table from a list of statements
 stmtsSmbTbl :: Int -> ([Statement], SymbolTbl, Rewrite, DataTbl) -> [Statement] -> ([Statement], SymbolTbl, Rewrite, DataTbl)
@@ -102,7 +106,7 @@ addStatement _ (ss,st,rt,dt) (Decrement var)
       var' = renameVar rt var
 
 addStatement _ (ss,st,rt,dt) (LambdaApply name var)
-  | checkLambda lt vt = semError $ show var ++ " (" ++ show vt ++ ") cannot go through the looking-glass " ++ show name ++ " (" ++ show lt ++ ")."
+  | lt /= vt = semError $ show var ++ " (" ++ show vt ++ ") cannot go through the looking-glass " ++ show name ++ " (" ++ show lt ++ ")."
   | otherwise = (ss++[LambdaApply name var'], st, rt, dt)
   where
     LambdaType lt = Map.findWithDefault (undefinedLambError name) name st
@@ -224,10 +228,6 @@ castable :: Type -> Type -> Bool
 castable Number Letter = True -- castWarning
 castable Letter Number = True
 castable x y = x == y
-
-checkLambda :: Type -> Type -> Bool
-checkLambda lt (Array vt) = lt /= vt
-checkLambda lt vt         = lt /= vt
 
 lambdaType :: [Statement] -> Type -> Type
 lambdaType s t
