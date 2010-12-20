@@ -34,7 +34,6 @@ transStat _ (LambdaApply label (Var name))   = [SPushN name] ++ [SCall label] ++
 -- TODO Could de-duplicate transExp?
 transStat a (LambdaApply label (VarArr n e)) = (transExp a e) ++ [SGet n] ++ [SCall label] ++ (transExp a e) ++ [SPut n]
 
--- FIXME
 transStat _ (Input (Var name)) = [SInput] ++ [SPop name]
 transStat a (Input (VarArr name index)) = [SInput] ++ (transExp a index) ++ [SPut name]
 
